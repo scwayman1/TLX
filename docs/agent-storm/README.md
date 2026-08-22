@@ -6,13 +6,13 @@ Produce a fast, evidence-backed TelemetryX demo that proves one coherent fleet-m
 
 ## Demo promise
 
-A fleet manager can identify a high-priority asset exception, inspect grounded evidence and telemetry, coordinate a safe maintenance response, reserve the required inventory, and understand ownership and audit history without issuing a real device command.
+A fleet manager can identify a high-priority asset exception, inspect grounded evidence and confidence-labeled interpretation, review ownership and operating history, explicitly approve or reject a scoped synthetic vendor-availability lookup, and reach a decision-ready safe response plan without issuing a real command or implying that inventory, repair, or return to service has occurred.
 
 ## Target user and outcome
 
 - **Primary user:** fleet manager or operational supervisor responsible for fleet availability and safe return to service.
-- **Job:** move an ambiguous asset exception from signal to verified resolution without losing context, ownership, safety boundaries, or evidence.
-- **Desired outcome:** faster, safer, auditable exception resolution with fewer handoffs and less fragmented evidence.
+- **Job:** move an ambiguous asset exception from signal to an approved safe response plan without losing context, ownership, safety boundaries, or evidence.
+- **Desired outcome:** reduce time and coordination loss from first actionable signal to an approved, evidence-grounded safe response plan.
 - **Tranche success:** the demo is rehearsable end to end; claims trace to evidence; automated gates pass; known simulation and production gaps are explicit; a separate team can continue without hidden chat context.
 
 ## Authoritative inputs
