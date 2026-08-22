@@ -39,4 +39,11 @@ describe('TelemetryX operating shell', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Approve lookup' }))
     expect(screen.getByRole('button', { name: 'Run approved tool' })).toBeInTheDocument()
   })
+
+  it('does not represent the unavailable brake assembly as internally reserved', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /Parts & inventory/ }))
+    expect(screen.getByText('External quote pending')).toBeInTheDocument()
+    expect(screen.queryByText('Reserved')).not.toBeInTheDocument()
+  })
 })
