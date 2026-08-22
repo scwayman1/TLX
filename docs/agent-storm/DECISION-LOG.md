@@ -9,7 +9,7 @@
 | D-005 | New behavior follows strict test-first RED-GREEN-REFACTOR. | Decided | Rapid demo iteration must remain safe and reproducible. | Quality owner | User explicitly authorizes a throwaway prototype exception. |
 | D-006 | Linear is the commitment/traceability system; repository docs hold durable implementation context. | Decided | Prevent parallel shadow backlogs while keeping agents independent of chat history. | Chief of Staff | Tooling proves unable to maintain cross-links or ownership. |
 | D-007 | The fast demo claims decision-ready safe planning, not inventory reservation, repair completion, or verified return to service. | Decided for current demo | WS1, WS2, WS3, WS4, and WS7 independently found that the rendered path ends after a synthetic vendor-availability result and preview-only action-plan control. | Product + demo owner | A tested vertical slice implements and visibly verifies later lifecycle states. |
-| D-008 | Primary learning outcome is time from first actionable exception signal to an approved safe response plan. | Proposed pending product-owner approval | It isolates the software-influenceable coordination interval from physical repair and vendor delivery time. | Product owner | Representative users identify a different decision-useful outcome or no credible baseline can be established. |
+| D-008 | Primary learning outcome is time from first actionable exception signal to an approved safe response plan. | Decided; approved by product owner | It isolates the software-influenceable coordination interval from physical repair and vendor delivery time. | Product owner | Representative users identify a different decision-useful outcome or no credible baseline can be established. |
 
 ## Open decisions
 
