@@ -11,6 +11,8 @@
 
 The repository is a credible demo baseline, not yet a protected/reproducible quality baseline.
 
+> **Audit provenance and reconciliation (2026-08-22):** findings above were captured against commit `8e8b23a`, before PRs #2–#4 merged. Current `main` additionally has `.github/workflows/ci.yml` whose required `quality` check runs install, lint, tests, build, and the production dependency audit on every pull request and push, protected `main` requiring that check and resolved review comments, and 24 passing investigation/domain tests. Statements such as "no workflow exists" and "every check is voluntary" describe the audited `8e8b23a` checkout, not the delivered tree. Findings that remain valid against current `main`: Google Fonts runtime request, `.gitignore` secret-file coverage gaps, absent accessibility/secret-scan/CodeQL gates, and preview external-request E2E enforcement.
+
 ## Contract used
 
 The governing storm documents require:

@@ -21,18 +21,18 @@ The runnable slice **stops at “Prepare action plan.”** It does not reserve i
 |---|---|---|
 | `docs/agent-storm/README.md` | Demo promise, synthetic-only boundary, no real device command, durable handoff expectation | Decided tranche contract |
 | `docs/agent-storm/WORKSTREAMS.md` | WS7 acceptance path: setup → trigger → investigation → response → resolution → measurable outcome | Decided workstream contract |
-| `docs/agent-storm/DECISION-LOG.md` | Exception-to-resolution job; synthetic data; no device command; unresolved persona and primary outcome | Decided direction plus open decisions |
+| `docs/agent-storm/DECISION-LOG.md` | Exception-to-resolution job; synthetic data; no device command; primary outcome approved (D-008); persona selection still open | Decided direction plus open decisions |
 | `docs/agent-storm/REGISTERS.md` | Risks, assumptions, dependencies, and unresolved evidence needs | Current risk register; customer value remains a hypothesis |
 | `docs/PRODUCT_SCOPE.md` and `docs/ARCHITECTURE.md` | Operating loop, implemented investigation behavior, explicit production gaps, modular-monolith evolution | Repository product/technical contract |
 | `docs/evidence/AP-ENV-DEMO-product-map-checkpoint-2.md` | Legacy evidence for asset state, maintenance, inventory, roles, context, audit/safety needs | Observed at AcgAdmin ceiling; lower-role enforcement unproven |
 | `docs/evidence/AP-ENV-PHX-redacted-safety-checkpoint.md` and `AP-ENV-KENCO-redacted-safety-checkpoint.md` | Why live/customer-derived environments remain out of bounds | Read-only, redacted safety checkpoints |
 | `docs/evidence/GemOne-public-product-technical-market-assessment.md` | Competitive relevance of telemetry-to-action and explicit command/API/freshness contracts | Public-source assessment; private capability and customer outcomes unknown |
-| `docs/agent-storm/outputs/WS1-product-jtbd.md` | Narrows the honest job to exception-to-safe-plan, proposes time-to-approved-safe-plan, participant criteria, and evidence thresholds | Product recommendation pending owner approval; no customer evidence yet |
+| `docs/agent-storm/outputs/WS1-product-jtbd.md` | Narrows the honest job to exception-to-safe-plan, proposes time-to-approved-safe-plan, participant criteria, and evidence thresholds | Recommendation approved by product owner (D-008); no customer evidence yet |
 | `docs/agent-storm/outputs/WS3-domain-data-audit.md` | Confirms current in-memory guards and identifies reservation, return-to-service, tenant, audit, and effective-time contract gaps | Safe-boundary analysis; future contracts are proposals, not implemented behavior |
 | `docs/agent-storm/outputs/WS4-frontend-vertical-slice.md` | Proposes a TDD decision-plan/work-order/simulation-only reservation tracer and explicit reset | Reconnaissance brief only; no proposed behavior is present in the current product |
 | `src/App.tsx`, `src/domain/investigation.ts`, and tests | Exact runnable path, copy, state transitions, synthetic lookup output, and reset behavior | Directly inspected and executed in the current repository |
 
-**Current evidence judgment:** the interaction is strong enough to test comprehension, trust, decision usefulness, and workflow fit. WS1 recommends **time from first actionable signal to an approved safe response plan** as the primary software-influenceable outcome, but the product owner has not yet approved it and no baseline exists. The evidence is **not** strong enough to claim customer value, saved time, reduced downtime, role correctness, integration readiness, or production safety.
+**Current evidence judgment:** the interaction is strong enough to test comprehension, trust, decision usefulness, and workflow fit. WS1 recommended **time from first actionable signal to an approved safe response plan** as the primary software-influenceable outcome, and the product owner has approved it (DECISION-LOG D-008). No baseline exists yet; establishing one is part of validation. The evidence is **not** strong enough to claim customer value, saved time, reduced downtime, role correctness, integration readiness, or production safety.
 
 ## 3. Run card
 

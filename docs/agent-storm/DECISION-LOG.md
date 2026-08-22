@@ -16,6 +16,6 @@
 | ID | Decision needed | Options | Evidence threshold | Decider |
 |---|---|---|---|---|
 | OD-001 | Exact target fleet persona for the first validation session | Fleet manager; site supervisor; maintenance coordinator | Named participant/workflow evidence and job frequency/cost | Product owner |
-| OD-002 | Which demo outcome is the primary success measure | Time-to-triage; time-to-owner; time-to-safe-plan; handoff count; evidence completeness | Baseline from representative users or explicit learning objective | Product owner |
+| OD-002 | ~~Which demo outcome is the primary success measure~~ **CLOSED 2026-08-22 → D-008:** time-to-approved-safe-plan approved by product owner | Time-to-triage; time-to-owner; time-to-safe-plan; handoff count; evidence completeness | Product-owner approval recorded in D-008 | Product owner |
 | OD-003 | Whether lower-privilege AssetPro accounts can be created/used | Use synthetic accounts; defer and label unknown | Explicit user authorization and safe identity boundary | User |
 | OD-004 | Whether to merge next demo changes directly or through protected PRs | PR required; temporary rapid branch flow | Current branch protection and demo deadline | Repository owner |
