@@ -45,4 +45,61 @@ describe('safe-response decision plan', () => {
     expect(replay.decisionPlan.selectedOptionId).toBe('reschedule')
     expect(replay.decisionPlan.reservationExecuted).toBe(false)
   })
+
+  it('fails closed when the same idempotency key replays a different payload', () => {
+    const plan = createSafeResponsePlan()
+    const command = {
+      optionId: 'expedite' as const,
+      rationale: 'Deployment tomorrow depends on this trailer',
+      actorId: 'user-dfoster',
+      workOrderIntentId: 'WO-24091',
+      idempotencyKey: 'decision:WO-24091:v1',
+    }
+    const first = recordDecisionPlan(plan, command)
+
+    const replayDifferentRationale = () =>
+      recordDecisionPlan(first.decisionPlan, { ...command, rationale: 'Changed rationale' })
+    expect(replayDifferentRationale).toThrow(/different payload/)
+
+    const replayDifferentOption = () =>
+      recordDecisionPlan(first.decisionPlan, {
+        ...command,
+        optionId: 'reschedule',
+      })
+    expect(replayDifferentOption).toThrow(/different payload/)
+
+    const replayDifferentActor = () =>
+      recordDecisionPlan(first.decisionPlan, { ...command, actorId: 'user-scott' })
+    expect(replayDifferentActor).toThrow(/different payload/)
+  })
+
+  it('enforces that the recorded actor is the selected option’s authorized approver', () => {
+    const plan = createSafeResponsePlan()
+    expect(plan.options.every(option => option.requiredApproverId === 'user-dfoster')).toBe(true)
+    expect(plan.options[0].requiredApprover).toContain('Dana Foster')
+
+    const unauthorized = () =>
+      recordDecisionPlan(plan, {
+        optionId: 'expedite',
+        rationale: 'Deployment tomorrow depends on this trailer',
+        actorId: 'user-scott',
+        workOrderIntentId: 'WO-24091',
+        idempotencyKey: 'decision:WO-24091:v1',
+      })
+    expect(unauthorized).toThrow(/authorized approver/)
+  })
+
+  it('yields identical event IDs and timestamps for identical flows', () => {
+    const command = {
+      optionId: 'expedite' as const,
+      rationale: 'Deployment tomorrow depends on this trailer',
+      actorId: 'user-dfoster',
+      workOrderIntentId: 'WO-24091',
+      idempotencyKey: 'decision:WO-24091:v1',
+    }
+    const first = recordDecisionPlan(createSafeResponsePlan(), command)
+    const second = recordDecisionPlan(createSafeResponsePlan(), command)
+
+    expect(second.events).toEqual(first.events)
+  })
 })

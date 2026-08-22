@@ -19,7 +19,7 @@ export type ToolRun = {
 }
 export type TimelineEvent = {
   id: string
-  kind: 'intent.recorded' | 'grounding.completed' | 'interpretation.prepared' | 'tool.proposed' | 'tool.approved' | 'tool.rejected' | 'tool.completed'
+  kind: 'intent.recorded' | 'grounding.completed' | 'interpretation.prepared' | 'tool.proposed' | 'tool.approved' | 'tool.rejected' | 'tool.completed' | 'decision.recorded'
   label: string
   actorId: string
   occurredAt: string
@@ -38,8 +38,39 @@ export type Investigation = {
 }
 export type ToolProposal = Pick<ToolRun, 'tool' | 'purpose' | 'inputSummary'>
 
-const now = () => new Date().toISOString()
-const event = (kind: TimelineEvent['kind'], label: string, actorId: string): TimelineEvent => ({ id: `${kind}-${Date.now()}-${Math.random()}`, kind, label, actorId, occurredAt: now() })
+// Bounded synthetic-demo clock and ID source: identical flows after reset must
+// produce identical audit records (timestamps and event IDs). Not general
+// infrastructure — replace with injected clock/IDs only if real persistence lands.
+export const DEMO_CLOCK_ISO = '2026-08-21T15:00:00.000Z'
+
+let deterministicCounter = 0
+
+const now = () => DEMO_CLOCK_ISO
+const event = (kind: TimelineEvent['kind'], label: string, actorId: string): TimelineEvent => {
+  deterministicCounter += 1
+  const sequence = String(deterministicCounter).padStart(4, '0')
+  return { id: `${kind}-${sequence}`, kind, label, actorId, occurredAt: now() }
+}
+
+export function resetDeterministicIds(): void {
+  deterministicCounter = 0
+}
+
+export function appendDecisionToInvestigation(state: Investigation, decisionPlan: SafeResponsePlanStateLike): Investigation {
+  const last = decisionPlan.events?.at(-1)
+  if (!last) throw new Error('No recorded decision to append to the operating memory timeline')
+  return {
+    ...state,
+    timeline: [...state.timeline, {
+      id: `decision.recorded-${last.id}`,
+      kind: 'decision.recorded',
+      label: `Decision recorded: ${last.optionId} · ${last.workOrderIntentId} · ${last.rationale} · event ${last.id}`,
+      actorId: last.actorId,
+      occurredAt: last.occurredAt,
+    }],
+  }
+}
+type SafeResponsePlanStateLike = { events?: { id: string; optionId: string; rationale: string; actorId: string; workOrderIntentId: string; occurredAt: string }[] }
 
 export function createAssetRiskInvestigation(): Investigation {
   return {
