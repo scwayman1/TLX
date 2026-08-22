@@ -26,6 +26,7 @@ TelemetryX is organized around an operating loop rather than disconnected record
 - Co-piloted asset-risk investigation beginning from a real operating question
 - Grounded facts and confidence-labeled inferences with visible provenance
 - Legible synthetic external-tool proposal, human approval/rejection, and execution states
+- Synthetic safe-response decision plan presenting exactly two options (expedite quoted part vs reschedule deployment) with trade-offs, evidence/confidence, quote freshness, and required approver; human selection, required rationale, and an actor-attributed, timestamped, idempotent decision event linked to the work-order intent (SCO-26)
 - Append-only operating timeline covering intent, grounding, interpretation, approval, and result
 
 - Synthetic portfolio mission control
