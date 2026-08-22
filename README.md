@@ -14,6 +14,7 @@ This repository currently contains a **synthetic-data product foundation** built
 - Parts and inventory workspace
 - People, reports, and governance/control surfaces
 - Human-in-the-loop agent recommendations
+- Evidence-backed asset-risk investigations with explicit tool approval and operating memory
 - Responsive desktop/mobile interface
 
 ## Run locally

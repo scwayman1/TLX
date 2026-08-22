@@ -29,4 +29,14 @@ describe('TelemetryX operating shell', () => {
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(screen.queryByRole('dialog', { name: 'Search and navigation' })).not.toBeInTheDocument()
   })
+
+  it('opens a grounded investigation and requires approval before tool execution', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Investigate with agent' }))
+    expect(screen.getByRole('heading', { name: 'Why is TRL-443 becoming a risk, and what should we do?' })).toBeInTheDocument()
+    expect(screen.getByText('Human approval required')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Run approved tool' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Approve lookup' }))
+    expect(screen.getByRole('button', { name: 'Run approved tool' })).toBeInTheDocument()
+  })
 })

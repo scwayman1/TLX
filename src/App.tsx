@@ -6,6 +6,8 @@ import {
   ShieldCheck, Truck, Users, Wrench, X, Zap
 } from 'lucide-react'
 import './App.css'
+import './investigation.css'
+import { approveToolRun, createAssetRiskInvestigation, executeApprovedToolRun, rejectToolRun, proposeToolRun, type Investigation } from './domain/investigation'
 
 type Status = 'Available' | 'In service' | 'Due soon' | 'Out of service'
 type Asset = { id:string; name:string; type:string; location:string; operator:string; hours:number; health:number; status:Status; nextService:string }
@@ -42,6 +44,7 @@ function App() {
   const [commandOpen, setCommandOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
+  const [investigation, setInvestigation] = useState<Investigation|null>(null)
   const filtered = useMemo(() => assets.filter(a => (assetFilter==='All'||a.status===assetFilter) && `${a.id} ${a.name} ${a.location}`.toLowerCase().includes(query.toLowerCase())),[assetFilter,query])
   const act = (message:string) => { setNotice(`Simulated preview · ${message}`); window.setTimeout(()=>setNotice(''),2800) }
 
@@ -81,7 +84,7 @@ function App() {
 
     <main>
       <div className="demo-banner">Synthetic demonstration data · Actions are simulated · No production systems connected</div>
-      {page==='Mission control' ? <Dashboard onPage={setPage} onAsset={setSelected} onAction={act}/> : page==='Assets' ? <AssetsPage query={query} setQuery={setQuery} filter={assetFilter} setFilter={setAssetFilter} rows={filtered} onAsset={setSelected} onAction={act}/> : <DomainPage page={page} onAction={act}/>} 
+      {investigation ? <InvestigationWorkspace investigation={investigation} setInvestigation={setInvestigation} onClose={()=>setInvestigation(null)} onAction={act}/> : page==='Mission control' ? <Dashboard onPage={setPage} onAsset={setSelected} onInvestigate={()=>setInvestigation(proposeToolRun(createAssetRiskInvestigation(),{tool:'Preferred vendor availability',purpose:'Verify brake assembly availability and delivery date',inputSummary:'BA-14TL brake assembly · deliver to Phoenix Yard'}))} onAction={act}/> : page==='Assets' ? <AssetsPage query={query} setQuery={setQuery} filter={assetFilter} setFilter={setAssetFilter} rows={filtered} onAsset={setSelected} onAction={act}/> : <DomainPage page={page} onAction={act}/>} 
     </main>
 
     {selected && <AssetDrawer asset={selected} onClose={()=>setSelected(null)} onAction={act}/>} 
@@ -90,7 +93,7 @@ function App() {
   </div>
 }
 
-function Dashboard({onPage,onAsset,onAction}:{onPage:(p:string)=>void;onAsset:(a:Asset)=>void;onAction:(m:string)=>void}) {
+function Dashboard({onPage,onAsset,onInvestigate,onAction}:{onPage:(p:string)=>void;onAsset:(a:Asset)=>void;onInvestigate:()=>void;onAction:(m:string)=>void}) {
  return <div className="page">
   <div className="page-head"><div><span className="eyebrow">Portfolio operating view</span><h1>Mission control</h1><p>Exceptions, priorities, and decisions across your fleet.</p></div><div className="head-actions"><button className="secondary" onClick={()=>onAction('Report snapshot prepared')}><FileBarChart size={16}/> Export snapshot</button><button className="primary" onClick={()=>onAction('New work order draft created')}><Plus size={16}/> New work order</button></div></div>
   <section className="kpi-grid">
@@ -101,7 +104,7 @@ function Dashboard({onPage,onAsset,onAction}:{onPage:(p:string)=>void;onAsset:(a
   </section>
   <div className="content-grid">
     <section className="panel priorities"><div className="panel-head"><div><h2>Priority queue</h2><p>Only work that needs a person’s attention</p></div><button className="link" onClick={()=>onPage('Work orders')}>View all <ChevronRight size={14}/></button></div>
-      <div className="priority-card critical"><div className="priority-icon"><AlertTriangle size={18}/></div><div><span><Badge tone="danger">Safety critical</Badge><small>TRL-443 · Phoenix Yard</small></span><h3>Brake failure is blocking field deployment</h3><p>Repair estimate is $1,840. Preview an expedited-parts decision to see the intended workflow.</p><div className="decision"><div className="avatars">DF</div><span><b>Decision owner</b>Dana Foster · due in 1h 24m</span></div></div><div className="card-actions"><button className="secondary" onClick={()=>onAsset(assets[3])}>Review asset</button><button className="primary" onClick={()=>onAction('Approval workflow previewed; no record was changed')}>Preview approval</button></div></div>
+      <div className="priority-card critical"><div className="priority-icon"><AlertTriangle size={18}/></div><div><span><Badge tone="danger">Safety critical</Badge><small>TRL-443 · Phoenix Yard</small></span><h3>Brake failure is blocking field deployment</h3><p>Investigate the risk with grounded evidence, visible tool use, and human approval.</p><div className="decision"><div className="avatars">DF</div><span><b>Decision owner</b>Dana Foster · due in 1h 24m</span></div></div><div className="card-actions"><button className="secondary" onClick={()=>onAsset(assets[3])}>Review asset</button><button className="primary" onClick={onInvestigate}>Investigate with agent</button></div></div>
       <div className="priority-card"><div className="priority-icon amber"><Clock3 size={18}/></div><div><span><Badge tone="warning">Service risk</Badge><small>EXC-221 · Northstar Site</small></span><h3>Planned maintenance waiting on hydraulic filter</h3><p>Current supplier delivery misses the maintenance window by two days.</p></div><div className="card-actions"><button className="secondary" onClick={()=>onAsset(assets[1])}>Open details</button></div></div>
     </section>
     <section className="panel utilization"><div className="panel-head"><div><h2>Fleet health</h2><p>Readiness by operating group</p></div><button className="icon-button"><CalendarDays size={16}/></button></div>
@@ -111,6 +114,17 @@ function Dashboard({onPage,onAsset,onAction}:{onPage:(p:string)=>void;onAsset:(a
   </div>
   <section className="panel table-panel"><div className="panel-head"><div><h2>Active work</h2><p>Maintenance currently affecting operations</p></div><button className="link" onClick={()=>onPage('Work orders')}>All work orders <ChevronRight size={14}/></button></div><WorkTable/></section>
  </div>
+}
+
+function InvestigationWorkspace({investigation,setInvestigation,onClose,onAction}:{investigation:Investigation;setInvestigation:(value:Investigation)=>void;onClose:()=>void;onAction:(message:string)=>void}) {
+ const tool=investigation.pendingToolRun
+ const approve=()=>setInvestigation(approveToolRun(investigation,'user-scott'))
+ const reject=()=>setInvestigation(rejectToolRun(investigation,'user-scott','Use internal evidence only'))
+ const run=()=>setInvestigation(executeApprovedToolRun(investigation,'Desert Fleet Supply · 1 BA-14TL available · delivery tomorrow by 10:30 AM · quoted $1,840'))
+ return <div className="investigation-page"><header className="investigation-head"><button className="back-link" onClick={onClose}>← Mission control</button><div><span className="eyebrow">Active investigation · {investigation.assetId}</span><h1>{investigation.question}</h1><p>Human-led operating thread · every source, inference, approval, and result remains inspectable.</p></div><Badge tone={investigation.status==='Waiting approval'?'warning':investigation.status==='Ready for decision'?'success':'info'}>{investigation.status}</Badge></header>
+ <div className="investigation-grid"><section className="investigation-thread"><article className="thread-turn"><div className="thread-avatar">SW</div><div><span>Scott Wayman · Fleet leader</span><p>{investigation.question}</p></div></article><article className="thread-turn agent-turn"><div className="thread-avatar agent-avatar"><Command size={16}/></div><div><span>TelemetryX operations agent</span><h2>Here is what the evidence says</h2><div className="truth-grid"><div><b>Facts</b>{investigation.facts.map(f=><p key={f}><CheckCircle2 size={13}/>{f}</p>)}</div><div><b>Interpretation</b>{investigation.inferences.map(i=><p key={i.statement}><Badge tone={i.confidence==='High'?'success':'warning'}>{i.confidence}</Badge><span>{i.statement}<small>{i.rationale}</small></span></p>)}</div></div><div className="recommendation"><Zap size={17}/><div><b>Recommended next move</b><p>{investigation.recommendation}</p></div></div></div></article>
+ {tool&&<article className="tool-run"><div className="tool-run-head"><div><Activity size={17}/><span><b>{tool.tool}</b><small>External enrichment · synthetic adapter</small></span></div><Badge tone={tool.status==='Proposed'?'warning':tool.status==='Completed'?'success':'info'}>{tool.status}</Badge></div><dl><div><dt>Purpose</dt><dd>{tool.purpose}</dd></div><div><dt>Input</dt><dd>{tool.inputSummary}</dd></div></dl>{tool.status==='Proposed'&&<div className="approval-box"><div><ShieldCheck size={18}/><span><b>Human approval required</b><small>No external tool has run. Review the purpose and shared input.</small></span></div><div><button className="secondary" onClick={reject}>Reject</button><button className="primary" onClick={approve}>Approve lookup</button></div></div>}{tool.status==='Approved'&&<div className="approval-box approved"><div><CheckCircle2 size={18}/><span><b>Approved by Scott</b><small>Ready to run the synthetic vendor adapter.</small></span></div><button className="primary" onClick={run}>Run approved tool</button></div>}{tool.status==='Rejected'&&<div className="tool-result"><b>Rejected</b><p>{tool.rejectionReason}. No tool activity occurred.</p></div>}{tool.status==='Completed'&&<div className="tool-result"><b>Visible tool result</b><p>{tool.output}</p><button className="primary" onClick={()=>onAction('Action plan draft opened; nothing was assigned or purchased')}>Prepare action plan</button></div>}</article>}
+ <div className="copilot-composer"><Command size={17}/><input aria-label="Steer the investigation" placeholder="Ask a follow-up, add context, or redirect the investigation…"/><button onClick={()=>onAction('Steering message previewed')}>Send</button></div></section><aside className="evidence-rail"><div className="rail-head"><h2>Grounding</h2><Badge>{investigation.evidence.length} sources</Badge></div>{investigation.evidence.map(e=><article className="evidence-card" key={e.id}><span><Badge tone={e.type==='Fact'?'success':'neutral'}>{e.type}</Badge><small>{e.source}</small></span><b>{e.label}</b><p>{e.value}</p><time>{new Date(e.observedAt).toLocaleString()}</time></article>)}<div className="memory-panel"><h2>Operating memory</h2>{investigation.timeline.map(e=><div key={e.id}><i/><span><b>{e.label}</b><small>{e.actorId}</small></span></div>)}</div></aside></div></div>
 }
 
 function WorkTable(){return <div className="table-wrap"><table><thead><tr><th>Work order</th><th>Asset</th><th>Priority</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead><tbody>{orders.map(o=><tr key={o.id}><td><b>{o.id}</b><span>{o.title}</span></td><td>{o.asset}</td><td><Badge tone={o.priority==='Critical'?'danger':o.priority==='High'?'warning':'neutral'}>{o.priority}</Badge></td><td>{o.assignee}</td><td>{o.due}</td><td><Badge tone={o.status==='In progress'?'info':'neutral'}>{o.status}</Badge></td></tr>)}</tbody></table></div>}

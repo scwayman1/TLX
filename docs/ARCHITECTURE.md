@@ -5,6 +5,7 @@
 - React + TypeScript + Vite
 - CSS design system with responsive application shell
 - Local typed synthetic fixtures
+- Pure domain state machines for audited work orders, inventory transactions, and agent investigations
 - Vitest + Testing Library for critical interaction coverage
 - Oxlint, TypeScript build, and npm audit quality gates
 

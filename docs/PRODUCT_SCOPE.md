@@ -23,6 +23,11 @@ TelemetryX is organized around an operating loop rather than disconnected record
 
 ## Implemented vertical slice
 
+- Co-piloted asset-risk investigation beginning from a real operating question
+- Grounded facts and confidence-labeled inferences with visible provenance
+- Legible synthetic external-tool proposal, human approval/rejection, and execution states
+- Append-only operating timeline covering intent, grounding, interpretation, approval, and result
+
 - Synthetic portfolio mission control
 - Searchable and filterable fleet registry
 - Asset health, service state, and operating timeline
