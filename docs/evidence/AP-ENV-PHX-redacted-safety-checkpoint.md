@@ -11,7 +11,7 @@
 - Authenticated role: AcgAdmin.
 - One customer-identifying tenant/site context was visible and is intentionally omitted.
 - Full primary navigation matched the operational Demo surface: Dashboard, Assets, Safety, Maintenance, Tracker, Admin, Reports, and ACG Admin.
-- The asset page displayed a small fleet with online/offline states, alarms, named operators, and heartbeat timestamps updated within minutes of observation.
+- The asset page displayed fleet inventory with operational state, alarm, operator-association, and recent heartbeat evidence; counts, names, and timestamps are intentionally omitted.
 - Command-capable or externally actionable controls were visible: add, export, bulk selection/Functions, per-row edit, messaging/notification icons, and a mounted send-ticket workflow.
 - No integration names were visible from the bounded first page.
 

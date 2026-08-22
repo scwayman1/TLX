@@ -12,9 +12,9 @@
 - Authenticated role: AcgAdmin.
 - Tenant/site context was visible but is intentionally omitted.
 - Full primary navigation matched the operational surface: Dashboard, Assets, Safety, Maintenance, Tracker, Admin, Reports, and ACG Admin.
-- Asset paginator showed 58 total assets.
+- A nonzero fleet inventory was visible; the exact count is intentionally omitted.
 - Visible asset-state evidence included out-of-range device rows.
-- The newest visible heartbeat sample was dated 2026-08-05; additional samples extended further back. This proves device-state data exists but does not by itself establish whether operations are currently live.
+- Historical device-heartbeat samples were visible; exact dates and activity details are intentionally omitted. Their presence establishes that device-state data exists but does not establish whether operations are currently live.
 - Command-capable or externally actionable controls were visible: add, export, Functions, per-row edit, send-ticket, messaging, and notifications.
 - No integration name was inspected because deeper navigation is paused at the safety gate.
 

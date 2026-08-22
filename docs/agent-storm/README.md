@@ -42,7 +42,7 @@ No agent may present synthetic demo behavior as production capability or infer c
 - No credentials or customer data in source, logs, screenshots, fixtures, or issues.
 - No production integrations, private infrastructure scans, or authentication changes.
 - No real device commands, scheduled report sends, billing actions, or external communications.
-- PHX and Kenco remain read-only evidence environments.
+- PHX and Kenco are **STOP-REQUIRED**. Their sessions were closed after the bounded safety checkpoint; no agent may authenticate, browse, capture, or inspect them again unless the tenant/data owner separately authorizes a narrowly written scope and preferably provides a true read-only account.
 - Consequential actions require explicit human approval and an audit record.
 - Build vertical slices; do not broaden the application to appear comprehensive.
 
