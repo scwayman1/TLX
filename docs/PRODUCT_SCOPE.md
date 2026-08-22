@@ -42,3 +42,7 @@ TelemetryX is organized around an operating loop rather than disconnected record
 - Accessibility audit, browser matrix, load testing, threat model, and penetration test
 
 The current application is a product foundation, not a production asset system.
+
+## Quality review baseline
+
+Production release remains blocked until integrity, authorization, accessibility, observability, and deployment-safety gates are evidenced. In particular: use integer minor units or decimals for money; enforce tenant scope server-side; make mutations idempotent and transactional; preserve actor-attributed audit events; complete keyboard, screen-reader, zoom, responsive-width, and axe reviews; expose build identity and safe structured diagnostics; and prohibit live credentials, targets, or seed operations until explicitly authorized.

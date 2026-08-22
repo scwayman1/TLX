@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Activity, AlertTriangle, BarChart3, Bell, Box, CalendarDays,
   CheckCircle2, ChevronRight, ClipboardCheck, Clock3, Command, FileBarChart,
@@ -45,6 +45,22 @@ function App() {
   const filtered = useMemo(() => assets.filter(a => (assetFilter==='All'||a.status===assetFilter) && `${a.id} ${a.name} ${a.location}`.toLowerCase().includes(query.toLowerCase())),[assetFilter,query])
   const act = (message:string) => { setNotice(message); window.setTimeout(()=>setNotice(''),2800) }
 
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setCommandOpen(true)
+      }
+      if (event.key === 'Escape') {
+        setCommandOpen(false)
+        setSelected(null)
+        setMobileNav(false)
+      }
+    }
+    window.addEventListener('keydown', handleShortcut)
+    return () => window.removeEventListener('keydown', handleShortcut)
+  }, [])
+
   return <div className="app-shell">
     <header className="topbar">
       <button className="mobile-menu" aria-label="Toggle navigation" onClick={()=>setMobileNav(v=>!v)}><Menu size={19}/></button>
@@ -56,9 +72,9 @@ function App() {
     <aside className={mobileNav?'sidebar open':'sidebar'}>
       <div className="workspace"><div className="workspace-icon"><Zap size={17}/></div><div><b>3PM Operations</b><span>Synthetic demo workspace</span></div><ChevronRight size={15}/></div>
       <p className="nav-label">Operate</p>
-      <nav>{nav.slice(0,6).map(([label,Icon])=><button key={label} className={page===label?'active':''} onClick={()=>{setPage(label);setMobileNav(false)}}><Icon size={17}/><span>{label}</span>{label==='Work orders'&&<em>12</em>}</button>)}</nav>
+      <nav aria-label="Operate">{nav.slice(0,6).map(([label,Icon])=><button key={label} aria-current={page===label?'page':undefined} className={page===label?'active':''} onClick={()=>{setPage(label);setMobileNav(false)}}><Icon size={17}/><span>{label}</span>{label==='Work orders'&&<em>12</em>}</button>)}</nav>
       <p className="nav-label">Understand</p>
-      <nav>{nav.slice(6).map(([label,Icon])=><button key={label} className={page===label?'active':''} onClick={()=>{setPage(label);setMobileNav(false)}}><Icon size={17}/><span>{label}</span></button>)}</nav>
+      <nav aria-label="Understand">{nav.slice(6).map(([label,Icon])=><button key={label} aria-current={page===label?'page':undefined} className={page===label?'active':''} onClick={()=>{setPage(label);setMobileNav(false)}}><Icon size={17}/><span>{label}</span></button>)}</nav>
       <div className="agent-card"><div><Command size={15}/><b>Operations agent</b><Badge tone="success">Ready</Badge></div><p>Watching 146 assets. Two exceptions need a human decision.</p><button onClick={()=>act('Agent workbench opened')}>Open workbench <ChevronRight size={14}/></button></div>
       <button className="settings"><Settings size={16}/> Workspace settings</button>
     </aside>
@@ -70,7 +86,7 @@ function App() {
 
     {selected && <AssetDrawer asset={selected} onClose={()=>setSelected(null)} onAction={act}/>} 
     {commandOpen && <CommandPalette onClose={()=>setCommandOpen(false)} onPage={(p)=>{setPage(p);setCommandOpen(false)}} onAsset={(a)=>{setSelected(a);setCommandOpen(false)}}/>}
-    {notice && <div className="toast"><CheckCircle2 size={17}/>{notice}</div>}
+    {notice && <div className="toast" role="status" aria-live="polite"><CheckCircle2 size={17}/>{notice}</div>}
   </div>
 }
 
@@ -112,8 +128,8 @@ function DomainPage({page,onAction}:{page:string;onAction:(m:string)=>void}) { c
  'Controls':{icon:ShieldCheck,desc:'Govern access, approvals, data quality, and consequential actions.',stats:['24 active controls','0 critical findings','Last review Aug 20']}}
  const d=info[page]||info.Reports, Icon=d.icon; return <div className="page"><div className="page-head"><div><span className="eyebrow">Operations workspace</span><h1>{page}</h1><p>{d.desc}</p></div><button className="primary" onClick={()=>onAction(`New ${page.toLowerCase()} item created`)}><Plus size={16}/> Create new</button></div><div className="domain-hero"><Icon size={28}/><div>{d.stats.map(s=><span key={s}>{s}</span>)}</div></div><div className="content-grid"><section className="panel"><div className="panel-head"><div><h2>Operational queue</h2><p>Prioritized by impact, risk, and timing</p></div></div>{orders.map(o=><button className="queue-row" key={o.id} onClick={()=>onAction(`${o.id} opened`)}><div><Badge tone={o.priority==='Critical'?'danger':o.priority==='High'?'warning':'neutral'}>{o.priority}</Badge><b>{o.title}</b><span>{o.asset} · {o.assignee}</span></div><ChevronRight size={16}/></button>)}</section><section className="panel"><div className="panel-head"><div><h2>Agent brief</h2><p>Prepared from current operating data</p></div></div><div className="agent-brief"><Command size={20}/><h3>Three opportunities are ready</h3><p>TelemetryX has grouped related exceptions and prepared next-best actions. Nothing consequential happens without an accountable person.</p><button className="primary" onClick={()=>onAction('Agent recommendations opened')}>Review recommendations</button></div></section></div></div> }
 
-function AssetDrawer({asset,onClose,onAction}:{asset:Asset;onClose:()=>void;onAction:(m:string)=>void}) { return <><div className="scrim" onClick={onClose}/><aside className="drawer"><div className="drawer-head"><div><span>{asset.id}</span><h2>{asset.name}</h2></div><button onClick={onClose}><X size={18}/></button></div><div className="asset-summary"><div className="asset-hero"><Truck size={30}/></div><div><Badge tone={asset.status==='Available'?'success':asset.status==='Out of service'?'danger':'warning'}>{asset.status}</Badge><p>{asset.type} · {asset.location}</p></div></div><div className="drawer-metrics"><div><span>Health score</span><strong>{asset.health}</strong><Health value={asset.health}/></div><div><span>Meter</span><strong>{asset.hours.toLocaleString()}</strong><small>engine hours</small></div><div><span>Next service</span><strong>{asset.nextService}</strong><small>preventive maintenance</small></div><div><span>Operator</span><strong className="small-strong">{asset.operator}</strong><small>current assignment</small></div></div><section><h3>Operating timeline</h3>{[['Today','Telematics health snapshot received'],['Aug 20','Daily inspection passed'],['Aug 16','Fuel transaction matched'],['Aug 02','Preventive maintenance closed']].map(([d,e])=><div className="timeline" key={e}><span>{d}</span><i/><p>{e}</p></div>)}</section><div className="drawer-actions"><button className="secondary" onClick={()=>onAction('Asset report prepared')}>Generate report</button><button className="primary" onClick={()=>onAction(`Work order draft created for ${asset.id}`)}>Create work order</button></div></aside></> }
+function AssetDrawer({asset,onClose,onAction}:{asset:Asset;onClose:()=>void;onAction:(m:string)=>void}) { return <><div className="scrim" onClick={onClose}/><aside className="drawer" role="dialog" aria-modal="true" aria-labelledby="asset-drawer-title"><div className="drawer-head"><div><span>{asset.id}</span><h2 id="asset-drawer-title">{asset.name}</h2></div><button aria-label="Close asset details" onClick={onClose}><X size={18}/></button></div><div className="asset-summary"><div className="asset-hero"><Truck size={30}/></div><div><Badge tone={asset.status==='Available'?'success':asset.status==='Out of service'?'danger':'warning'}>{asset.status}</Badge><p>{asset.type} · {asset.location}</p></div></div><div className="drawer-metrics"><div><span>Health score</span><strong>{asset.health}</strong><Health value={asset.health}/></div><div><span>Meter</span><strong>{asset.hours.toLocaleString()}</strong><small>engine hours</small></div><div><span>Next service</span><strong>{asset.nextService}</strong><small>preventive maintenance</small></div><div><span>Operator</span><strong className="small-strong">{asset.operator}</strong><small>current assignment</small></div></div><section><h3>Operating timeline</h3>{[['Today','Telematics health snapshot received'],['Aug 20','Daily inspection passed'],['Aug 16','Fuel transaction matched'],['Aug 02','Preventive maintenance closed']].map(([d,e])=><div className="timeline" key={e}><span>{d}</span><i/><p>{e}</p></div>)}</section><div className="drawer-actions"><button className="secondary" onClick={()=>onAction('Asset report prepared')}>Generate report</button><button className="primary" onClick={()=>onAction(`Work order draft created for ${asset.id}`)}>Create work order</button></div></aside></> }
 
-function CommandPalette({onClose,onPage,onAsset}:{onClose:()=>void;onPage:(p:string)=>void;onAsset:(a:Asset)=>void}) { const [q,setQ]=useState(''); const matches=assets.filter(a=>`${a.id} ${a.name}`.toLowerCase().includes(q.toLowerCase())).slice(0,4); return <div className="command-scrim" onMouseDown={onClose}><div className="command" onMouseDown={e=>e.stopPropagation()}><label><Search size={18}/><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search or jump to…"/><button onClick={onClose}>esc</button></label><p>Quick navigation</p><div className="command-grid">{nav.slice(0,6).map(([n,Icon])=><button key={n} onClick={()=>onPage(n)}><Icon size={16}/>{n}</button>)}</div>{q&&<><p>Assets</p>{matches.map(a=><button className="command-result" key={a.id} onClick={()=>onAsset(a)}><Truck size={16}/><span><b>{a.name}</b><small>{a.id} · {a.location}</small></span><ChevronRight size={15}/></button>)}</>}</div></div> }
+function CommandPalette({onClose,onPage,onAsset}:{onClose:()=>void;onPage:(p:string)=>void;onAsset:(a:Asset)=>void}) { const [q,setQ]=useState(''); const matches=assets.filter(a=>`${a.id} ${a.name}`.toLowerCase().includes(q.toLowerCase())).slice(0,4); return <div className="command-scrim" onMouseDown={onClose}><div className="command" role="dialog" aria-modal="true" aria-label="Search and navigation" onMouseDown={e=>e.stopPropagation()}><label><Search size={18}/><span className="sr-only">Search or jump to</span><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search or jump to…"/><button aria-label="Close search" onClick={onClose}>esc</button></label><p>Quick navigation</p><div className="command-grid">{nav.slice(0,6).map(([n,Icon])=><button key={n} onClick={()=>onPage(n)}><Icon size={16}/>{n}</button>)}</div>{q&&<><p>Assets</p>{matches.map(a=><button className="command-result" key={a.id} onClick={()=>onAsset(a)}><Truck size={16}/><span><b>{a.name}</b><small>{a.id} · {a.location}</small></span><ChevronRight size={15}/></button>)}</>}</div></div> }
 
 export default App
