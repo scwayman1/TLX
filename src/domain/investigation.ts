@@ -21,7 +21,7 @@ export type ToolRun = {
 }
 export type TimelineEvent = {
   id: string
-  kind: 'intent.recorded' | 'grounding.completed' | 'interpretation.prepared' | 'tool.proposed' | 'tool.approved' | 'tool.rejected' | 'tool.completed'
+  kind: 'intent.recorded' | 'grounding.completed' | 'interpretation.prepared' | 'tool.proposed' | 'tool.approved' | 'tool.rejected' | 'tool.completed' | 'decision.recorded'
   label: string
   actorId: string
   occurredAt: string

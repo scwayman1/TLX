@@ -194,6 +194,13 @@ describe('TelemetryX operating shell', () => {
     expect(screen.getAllByText(SYNTHETIC_PERSONA.actorId).length).toBeGreaterThan(0)
   })
 
+  it('gives every mission-control control an accessible name', () => {
+    render(<App />)
+    for (const button of screen.getAllByRole('button')) {
+      expect(button, 'every button needs an accessible name').toHaveAccessibleName()
+    }
+  })
+
   it('supports the complete decision path from the keyboard', async () => {
     const user = userEvent.setup()
     render(<App />)

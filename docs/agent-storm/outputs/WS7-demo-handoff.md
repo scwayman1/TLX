@@ -5,6 +5,8 @@
 **Primary audience:** product decision owner, fleet/operations representative, technical/safety owner  
 **Run time:** 5–7 minutes, plus 10–15 minutes for validation and the decision gate
 
+> **Runbook reconciliation (2026-08-23, SCO-26 corrective branch):** the runnable path no longer stops at a `Prepare action plan` toast. After the visible tool result, a synthetic **Safe response plan** panel presents exactly two options (expedite the quoted BA-14TL assembly vs reschedule the Northstar deployment); the presenter selects one, enters a required rationale, and records an audited synthetic decision linked to WO-24091 with the visible statement `Reservation/purchase not executed · no supplier was contacted`. The recorded decision appears in Operating memory. The active persona on every decision surface is **Scott Wayman (synthetic persona — not authenticated)** — checklist items below that say `Approved by Scott` or reference the `Prepare action plan` toast are superseded accordingly. A `Reset demo` control in the investigation header restores the exact initial state; identical replays produce identical timeline IDs and timestamps (fixed demo clock `2026-08-21T15:00:00.000Z`, shown as ISO strings). Still true: no reservation, purchase, supplier contact, assignment, repair, return to service, or device command occurs.
+
 ## 1. What this experience is for
 
 This is not a feature tour and not a production-readiness review. It is a short decision-making experience built around one question:

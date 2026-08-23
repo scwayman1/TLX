@@ -100,7 +100,7 @@ describe('safe-response decision plan', () => {
     const trimmedReplay = recordDecisionPlan(first.decisionPlan, { ...baseCommand, rationale: `  ${baseCommand.rationale}  ` })
     expect(trimmedReplay.events).toEqual(first.events)
 
-    const conflictCodeOf = (mutation: Partial<typeof baseCommand>): string => {
+    const conflictCodeOf = (mutation: Partial<import('./decision-plan').DecisionPlanCommand>): string => {
       try {
         recordDecisionPlan(first.decisionPlan, { ...baseCommand, ...mutation })
       } catch (error) {
