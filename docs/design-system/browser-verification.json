@@ -1,0 +1,135 @@
+{
+  "app": "http://127.0.0.1:4173/",
+  "views": [
+    {
+      "viewport": [
+        320,
+        900
+      ],
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    },
+    {
+      "viewport": [
+        760,
+        1000
+      ],
+      "documentWidth": 760,
+      "bodyWidth": 760,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    },
+    {
+      "viewport": [
+        1100,
+        900
+      ],
+      "documentWidth": 1085,
+      "bodyWidth": 1085,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    },
+    {
+      "viewport": [
+        1440,
+        1100
+      ],
+      "documentWidth": 1425,
+      "bodyWidth": 1425,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    },
+    {
+      "viewport": [
+        1440,
+        1100
+      ],
+      "documentWidth": 1425,
+      "bodyWidth": 1425,
+      "horizontalOverflow": false,
+      "title": "TelemetryX design system",
+      "active": "Open design system lab"
+    },
+    {
+      "viewport": [
+        1440,
+        1100
+      ],
+      "documentWidth": 1425,
+      "bodyWidth": 1425,
+      "horizontalOverflow": false,
+      "title": "Why is TRL-443 becoming a risk, and what should we do?",
+      "active": "body"
+    }
+  ],
+  "reflow": [
+    {
+      "label": "200%",
+      "equivalentCssViewport": 720,
+      "viewport": [
+        720,
+        900
+      ],
+      "documentWidth": 720,
+      "bodyWidth": 720,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    },
+    {
+      "label": "400%",
+      "equivalentCssViewport": 360,
+      "viewport": [
+        360,
+        900
+      ],
+      "documentWidth": 360,
+      "bodyWidth": 360,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    }
+  ],
+  "keyboard": {
+    "mobileDrawer": {
+      "named": true,
+      "focusInside": true,
+      "mainInert": true,
+      "topbarInert": true
+    },
+    "desktopTable": {
+      "overflow": false,
+      "tabIndex": null
+    },
+    "narrowTable": {
+      "overflow": true,
+      "tabIndex": "0"
+    },
+    "missionControlTableReached": true,
+    "commandInvariant": {
+      "dialogCount": 1,
+      "assetOpen": true,
+      "commandOpen": false
+    }
+  },
+  "forcedColors": {
+    "emulated": true,
+    "screenshot": "mission-control-forced-colors.png"
+  },
+  "requests": [
+    "http://127.0.0.1:4173/",
+    "http://127.0.0.1:4173/assets/index-VUh5R1rD.js",
+    "http://127.0.0.1:4173/assets/index-Cgkf91P5.css",
+    "http://127.0.0.1:4173/favicon.svg",
+    "http://127.0.0.1:4173/assets/DesignSystemLab-Y9bNTrda.js",
+    "http://127.0.0.1:4173/assets/DesignSystemLab-CAOZI_Ih.css"
+  ],
+  "externalRequests": [],
+  "consoleErrors": []
+}

@@ -1,13 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import {
   Activity, AlertTriangle, BarChart3, Bell, Box, CalendarDays,
   CheckCircle2, ChevronRight, ClipboardCheck, Clock3, Command, FileBarChart,
   Gauge, LayoutDashboard, MapPin, Menu, PackageCheck, Plus, Search, Settings,
-  ShieldCheck, Truck, Users, Wrench, X, Zap
+  Palette, ShieldCheck, Truck, Users, Wrench, Zap
 } from 'lucide-react'
 import './App.css'
 import './investigation.css'
 import { approveToolRun, createAssetRiskInvestigation, executeApprovedToolRun, rejectToolRun, proposeToolRun, type Investigation } from './domain/investigation'
+import { ModalDialog } from './design-system/ModalDialog'
+import { isModalActive } from './design-system/modalStack'
+import { ScrollableRegion } from './design-system/ScrollableRegion'
+
+const DesignSystemLab = lazy(() => import('./design-system/DesignSystemLab').then(module => ({ default: module.DesignSystemLab })))
 
 type Status = 'Available' | 'In service' | 'Due soon' | 'Out of service'
 type Asset = { id:string; name:string; type:string; location:string; operator:string; hours:number; health:number; status:Status; nextService:string }
@@ -44,47 +49,52 @@ function App() {
   const [commandOpen, setCommandOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [mobileNav, setMobileNav] = useState(false)
+  const [isNarrow, setIsNarrow] = useState(() => window.matchMedia?.('(max-width: 760px)').matches ?? false)
   const [investigation, setInvestigation] = useState<Investigation|null>(null)
   const filtered = useMemo(() => assets.filter(a => (assetFilter==='All'||a.status===assetFilter) && `${a.id} ${a.name} ${a.location}`.toLowerCase().includes(query.toLowerCase())),[assetFilter,query])
   const act = (message:string) => { setNotice(`Simulated preview · ${message}`); window.setTimeout(()=>setNotice(''),2800) }
+  const openCommand = () => {
+    if (!isModalActive()) setCommandOpen(true)
+  }
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        setCommandOpen(true)
-      }
-      if (event.key === 'Escape') {
-        setCommandOpen(false)
-        setSelected(null)
-        setMobileNav(false)
+        openCommand()
       }
     }
     window.addEventListener('keydown', handleShortcut)
     return () => window.removeEventListener('keydown', handleShortcut)
   }, [])
 
+  useEffect(() => {
+    const query = window.matchMedia?.('(max-width: 760px)')
+    if (!query) return
+    const sync = () => setIsNarrow(query.matches)
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
+  }, [])
+
   return <div className="app-shell">
-    <header className="topbar">
-      <button className="mobile-menu" aria-label="Toggle navigation" onClick={()=>setMobileNav(v=>!v)}><Menu size={19}/></button>
+    <a className="skip-link" href="#main-content">Skip to main content</a>
+    <header className="topbar" data-modal-background>
+      <button className="mobile-menu" aria-label={mobileNav?'Close navigation':'Open navigation'} aria-expanded={mobileNav} aria-controls="primary-navigation" onClick={()=>setMobileNav(v=>!v)}><Menu size={19}/></button>
       <button className="wordmark" onClick={()=>setPage('Mission control')}><span>telemetry</span><b>x</b></button>
-      <button className="global-search" onClick={()=>setCommandOpen(true)}><Search size={16}/><span>Search assets, work orders, people, and reports</span><kbd>⌘ K</kbd></button>
+      <button className="global-search" onClick={openCommand}><Search size={16}/><span>Search assets, work orders, people, and reports</span><kbd>⌘ K</kbd></button>
       <div className="top-actions"><button aria-label="System health"><Activity size={17}/><span className="live-dot"/></button><button aria-label="Notifications"><Bell size={17}/><i>3</i></button><div className="avatar">SW</div></div>
     </header>
 
-    <aside className={mobileNav?'sidebar open':'sidebar'}>
-      <div className="workspace"><div className="workspace-icon"><Zap size={17}/></div><div><b>3PM Operations</b><span>Synthetic demo workspace</span></div><ChevronRight size={15}/></div>
-      <p className="nav-label">Operate</p>
-      <nav aria-label="Operate">{nav.slice(0,6).map(([label,Icon])=><button key={label} aria-current={page===label?'page':undefined} className={page===label?'active':''} onClick={()=>{setPage(label);setMobileNav(false)}}><Icon size={17}/><span>{label}</span>{label==='Work orders'&&<em>12</em>}</button>)}</nav>
-      <p className="nav-label">Understand</p>
-      <nav aria-label="Understand">{nav.slice(6).map(([label,Icon])=><button key={label} aria-current={page===label?'page':undefined} className={page===label?'active':''} onClick={()=>{setPage(label);setMobileNav(false)}}><Icon size={17}/><span>{label}</span></button>)}</nav>
-      <div className="agent-card"><div><Command size={15}/><b>Operations agent</b><Badge tone="success">Ready</Badge></div><p>Watching 146 assets. Two exceptions need a human decision.</p><button onClick={()=>act('Agent workbench opened')}>Open workbench <ChevronRight size={14}/></button></div>
-      <button className="settings"><Settings size={16}/> Workspace settings</button>
-    </aside>
+    {(!isNarrow || !mobileNav) && <aside ref={element => { if (element) element.inert = isNarrow }} id="primary-navigation" aria-label="Primary workspace" aria-hidden={isNarrow?true:undefined} inert={isNarrow?true:undefined} className="sidebar" data-modal-background>
+      <NavigationContent page={page} setPage={setPage} close={()=>setMobileNav(false)} onAction={act}/>
+    </aside>}
+    {isNarrow&&mobileNav&&<ModalDialog title="Primary workspace" variant="mobile-drawer" hideDefaultHeader onClose={()=>setMobileNav(false)}><aside id="primary-navigation" aria-label="Primary workspace" className="sidebar open mobile-sidebar">
+      <NavigationContent page={page} setPage={setPage} close={()=>setMobileNav(false)} onAction={act}/>
+    </aside></ModalDialog>}
 
-    <main>
+    <main id="main-content" data-modal-background>
       <div className="demo-banner">Synthetic demonstration data · Actions are simulated · No production systems connected</div>
-      {investigation ? <InvestigationWorkspace investigation={investigation} setInvestigation={setInvestigation} onClose={()=>setInvestigation(null)} onAction={act}/> : page==='Mission control' ? <Dashboard onPage={setPage} onAsset={setSelected} onInvestigate={()=>setInvestigation(proposeToolRun(createAssetRiskInvestigation(),{tool:'Preferred vendor availability',purpose:'Verify brake assembly availability and delivery date',inputSummary:'BA-14TL brake assembly · deliver to Phoenix Yard'}))} onAction={act}/> : page==='Assets' ? <AssetsPage query={query} setQuery={setQuery} filter={assetFilter} setFilter={setAssetFilter} rows={filtered} onAsset={setSelected} onAction={act}/> : <DomainPage page={page} onAction={act}/>} 
+      {investigation ? <InvestigationWorkspace investigation={investigation} setInvestigation={setInvestigation} onClose={()=>setInvestigation(null)} onAction={act}/> : page==='Mission control' ? <Dashboard onPage={setPage} onAsset={setSelected} onInvestigate={()=>setInvestigation(proposeToolRun(createAssetRiskInvestigation(),{tool:'Preferred vendor availability',purpose:'Verify brake assembly availability and delivery date',inputSummary:'BA-14TL brake assembly · deliver to Phoenix Yard'}))} onAction={act}/> : page==='Assets' ? <AssetsPage query={query} setQuery={setQuery} filter={assetFilter} setFilter={setAssetFilter} rows={filtered} onAsset={setSelected} onAction={act}/> : page==='Design system' ? <Suspense fallback={<div className="page" role="status">Loading design system lab…</div>}><DesignSystemLab/></Suspense> : <DomainPage page={page} onAction={act}/>}
     </main>
 
     {selected && <AssetDrawer asset={selected} onClose={()=>setSelected(null)} onAction={act}/>} 
@@ -93,8 +103,20 @@ function App() {
   </div>
 }
 
+function NavigationContent({page,setPage,close,onAction}:{page:string;setPage:(page:string)=>void;close:()=>void;onAction:(message:string)=>void}) {
+  return <>
+      <div className="workspace"><div className="workspace-icon"><Zap size={17}/></div><div><b>3PM Operations</b><span>Synthetic demo workspace</span></div><ChevronRight size={15}/></div>
+      <p className="nav-label">Operate</p>
+      <nav aria-label="Operate">{nav.slice(0,6).map(([label,Icon])=><button key={label} aria-current={page===label?'page':undefined} className={page===label?'active':''} onClick={()=>{setPage(label);close()}}><Icon size={17}/><span>{label}</span>{label==='Work orders'&&<em>12</em>}</button>)}</nav>
+      <p className="nav-label">Understand</p>
+      <nav aria-label="Understand">{nav.slice(6).map(([label,Icon])=><button key={label} aria-current={page===label?'page':undefined} className={page===label?'active':''} onClick={()=>{setPage(label);close()}}><Icon size={17}/><span>{label}</span></button>)}</nav>
+      <div className="agent-card"><div><Command size={15}/><b>Operations agent</b><Badge tone="success">Ready</Badge></div><p>Watching 146 assets. Two exceptions need a human decision.</p><button onClick={()=>onAction('Agent workbench opened')}>Open workbench <ChevronRight size={14}/></button></div>
+      <div className="sidebar-footer"><button className="settings" aria-label="Open design system lab" onClick={()=>{setPage('Design system');close()}}><Palette size={16}/> Design system <Badge>Demo</Badge></button><button className="settings" onClick={()=>onAction('Workspace settings opened')}><Settings size={16}/> Workspace settings</button></div>
+    </>
+}
+
 function Dashboard({onPage,onAsset,onInvestigate,onAction}:{onPage:(p:string)=>void;onAsset:(a:Asset)=>void;onInvestigate:()=>void;onAction:(m:string)=>void}) {
- return <div className="page">
+ return <div className="page dashboard-page">
   <div className="page-head"><div><span className="eyebrow">Portfolio operating view</span><h1>Mission control</h1><p>Exceptions, priorities, and decisions across your fleet.</p></div><div className="head-actions"><button className="secondary" onClick={()=>onAction('Report snapshot prepared')}><FileBarChart size={16}/> Export snapshot</button><button className="primary" onClick={()=>onAction('New work order draft created')}><Plus size={16}/> New work order</button></div></div>
   <section className="kpi-grid">
     <button className="kpi" onClick={()=>onPage('Assets')}><span>Fleet availability <Badge tone="success">+1.8%</Badge></span><strong>94.6%</strong><p>138 of 146 assets ready</p><Gauge size={22}/></button>
@@ -107,7 +129,7 @@ function Dashboard({onPage,onAsset,onInvestigate,onAction}:{onPage:(p:string)=>v
       <div className="priority-card critical"><div className="priority-icon"><AlertTriangle size={18}/></div><div><span><Badge tone="danger">Safety critical</Badge><small>TRL-443 · Phoenix Yard</small></span><h3>Brake failure is blocking field deployment</h3><p>Investigate the risk with grounded evidence, visible tool use, and human approval.</p><div className="decision"><div className="avatars">DF</div><span><b>Decision owner</b>Dana Foster · due in 1h 24m</span></div></div><div className="card-actions"><button className="secondary" onClick={()=>onAsset(assets[3])}>Review asset</button><button className="primary" onClick={onInvestigate}>Investigate with agent</button></div></div>
       <div className="priority-card"><div className="priority-icon amber"><Clock3 size={18}/></div><div><span><Badge tone="warning">Service risk</Badge><small>EXC-221 · Northstar Site</small></span><h3>Planned maintenance waiting on hydraulic filter</h3><p>Current supplier delivery misses the maintenance window by two days.</p></div><div className="card-actions"><button className="secondary" onClick={()=>onAsset(assets[1])}>Open details</button></div></div>
     </section>
-    <section className="panel utilization"><div className="panel-head"><div><h2>Fleet health</h2><p>Readiness by operating group</p></div><button className="icon-button"><CalendarDays size={16}/></button></div>
+    <section className="panel utilization"><div className="panel-head"><div><h2>Fleet health</h2><p>Readiness by operating group</p></div><button className="icon-button" aria-label="Change fleet health reporting period"><CalendarDays size={16}/></button></div>
       {[['Phoenix',96,42],['Denver',94,34],['Tucson',91,29],['Northstar',87,41]].map(([n,v,c])=><div className="util-row" key={n}><div><b>{n}</b><span>{c} assets</span></div><div className="meter"><i style={{width:`${v}%`}}/></div><strong>{v}%</strong></div>)}
       <div className="insight"><Zap size={16}/><div><b>Agent insight</b><p>Northstar availability could recover 4 points by moving GEN-118 maintenance into Friday’s idle window.</p><button onClick={()=>onAction('Recommendation added to maintenance plan')}>Add to plan</button></div></div>
     </section>
@@ -127,11 +149,11 @@ function InvestigationWorkspace({investigation,setInvestigation,onClose,onAction
  <div className="copilot-composer"><Command size={17}/><input aria-label="Steer the investigation" placeholder="Ask a follow-up, add context, or redirect the investigation…"/><button onClick={()=>onAction('Steering message previewed')}>Send</button></div></section><aside className="evidence-rail"><div className="rail-head"><h2>Grounding</h2><Badge>{investigation.evidence.length} sources</Badge></div>{investigation.evidence.map(e=><article className="evidence-card" key={e.id}><span><Badge tone={e.type==='Fact'?'success':'neutral'}>{e.type}</Badge><small>{e.source}</small></span><b>{e.label}</b><p>{e.value}</p><time>{new Date(e.observedAt).toLocaleString()}</time></article>)}<div className="memory-panel"><h2>Operating memory</h2>{investigation.timeline.map(e=><div key={e.id}><i/><span><b>{e.label}</b><small>{e.actorId}</small></span></div>)}</div></aside></div></div>
 }
 
-function WorkTable(){return <div className="table-wrap"><table><thead><tr><th>Work order</th><th>Asset</th><th>Priority</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead><tbody>{orders.map(o=><tr key={o.id}><td><b>{o.id}</b><span>{o.title}</span></td><td>{o.asset}</td><td><Badge tone={o.priority==='Critical'?'danger':o.priority==='High'?'warning':'neutral'}>{o.priority}</Badge></td><td>{o.assignee}</td><td>{o.due}</td><td><Badge tone={o.status==='In progress'?'info':'neutral'}>{o.status}</Badge></td></tr>)}</tbody></table></div>}
+function WorkTable(){return <ScrollableRegion label="Active work orders table"><table><thead><tr><th>Work order</th><th>Asset</th><th>Priority</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead><tbody>{orders.map(o=><tr key={o.id}><td><b>{o.id}</b><span>{o.title}</span></td><td>{o.asset}</td><td><Badge tone={o.priority==='Critical'?'danger':o.priority==='High'?'warning':'neutral'}>{o.priority}</Badge></td><td>{o.assignee}</td><td>{o.due}</td><td><Badge tone={o.status==='In progress'?'info':'neutral'}>{o.status}</Badge></td></tr>)}</tbody></table></ScrollableRegion>}
 
 function AssetsPage({query,setQuery,filter,setFilter,rows,onAsset,onAction}:{query:string;setQuery:(q:string)=>void;filter:'All'|Status;setFilter:(s:'All'|Status)=>void;rows:Asset[];onAsset:(a:Asset)=>void;onAction:(m:string)=>void}) { const filters:(Status|'All')[]=['All','Available','In service','Due soon','Out of service']; return <div className="page"><div className="page-head"><div><span className="eyebrow">Asset registry</span><h1>Fleet assets</h1><p>A trusted operating record for every vehicle and piece of equipment.</p></div><div className="head-actions"><button className="secondary" onClick={()=>onAction('Asset import validation opened')}><PackageCheck size={16}/> Import</button><button className="primary" onClick={()=>onAction('New asset form opened')}><Plus size={16}/> Add asset</button></div></div>
  <section className="panel"><div className="asset-tools"><label><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search fleet assets"/></label><div className="filters">{filters.map(f=><button className={filter===f?'active':''} key={f} onClick={()=>setFilter(f)}>{f}</button>)}</div><span>{rows.length} assets</span></div>
- <div className="table-wrap"><table><thead><tr><th>Asset</th><th>Status</th><th>Location</th><th>Operator</th><th>Meter</th><th>Health</th><th>Next service</th></tr></thead><tbody>{rows.map(a=><tr key={a.id}><td><button className="asset-open" onClick={()=>onAsset(a)}><span className="asset-name"><span className="asset-icon"><Truck size={17}/></span><span><b>{a.name}</b><small>{a.id} · {a.type}</small></span></span></button></td><td><Badge tone={a.status==='Available'?'success':a.status==='Out of service'?'danger':a.status==='Due soon'?'warning':'info'}>{a.status}</Badge></td><td><span className="location"><MapPin size={13}/>{a.location}</span></td><td>{a.operator}</td><td>{a.hours.toLocaleString()} hrs</td><td><Health value={a.health}/></td><td>{a.nextService}</td></tr>)}</tbody></table></div></section></div> }
+ <ScrollableRegion label="Fleet assets table"><table><thead><tr><th>Asset</th><th>Status</th><th>Location</th><th>Operator</th><th>Meter</th><th>Health</th><th>Next service</th></tr></thead><tbody>{rows.map(a=><tr key={a.id}><td><button className="asset-open" onClick={()=>onAsset(a)}><span className="asset-name"><span className="asset-icon"><Truck size={17}/></span><span><b>{a.name}</b><small>{a.id} · {a.type}</small></span></span></button></td><td><Badge tone={a.status==='Available'?'success':a.status==='Out of service'?'danger':a.status==='Due soon'?'warning':'info'}>{a.status}</Badge></td><td><span className="location"><MapPin size={13}/>{a.location}</span></td><td>{a.operator}</td><td>{a.hours.toLocaleString()} hrs</td><td><Health value={a.health}/></td><td>{a.nextService}</td></tr>)}</tbody></table></ScrollableRegion></section></div> }
 
 function DomainPage({page,onAction}:{page:string;onAction:(m:string)=>void}) { const info:Record<string,{icon:any;desc:string;stats:string[]}>={
  'Work orders':{icon:Wrench,desc:'Plan, approve, execute, and audit maintenance from request to return-to-service.',stats:['12 open orders','4 due today','82% on-time completion']},
@@ -149,8 +171,8 @@ function DomainPage({page,onAction}:{page:string;onAction:(m:string)=>void}) { c
   'Controls':[['Review','Expedited-parts approval threshold','Owner · Dana Foster','warning'],['Passing','Asset status transition policy','24 cases evaluated','success'],['Draft','Agent recommendation boundary','Awaiting accountable owner','neutral']]}
  const d=info[page]||info.Reports, Icon=d.icon, queue=queues[page]||queues.Reports; return <div className="page"><div className="page-head"><div><span className="eyebrow">Operations workspace</span><h1>{page}</h1><p>{d.desc}</p></div><button className="primary" onClick={()=>onAction(`${page} creation flow previewed; no record was created`)}><Plus size={16}/> Preview create</button></div><div className="domain-hero"><Icon size={28}/><div>{d.stats.map(s=><span key={s}>{s}</span>)}</div></div><div className="content-grid"><section className="panel"><div className="panel-head"><div><h2>{page} queue</h2><p>Prioritized by impact, risk, and timing</p></div></div>{queue.map(([state,title,meta,tone])=><button className="queue-row" key={title} onClick={()=>onAction(`${title} detail preview opened`)}><div><Badge tone={tone}>{state}</Badge><b>{title}</b><span>{meta}</span></div><ChevronRight size={16}/></button>)}</section><section className="panel"><div className="panel-head"><div><h2>Agent brief</h2><p>Prepared from synthetic operating data</p></div></div><div className="agent-brief"><Command size={20}/><h3>Three opportunities are ready</h3><p>TelemetryX has grouped related exceptions and prepared next-best actions. Nothing consequential happens without an accountable person.</p><button className="primary" onClick={()=>onAction('Agent recommendations preview opened')}>Review recommendations</button></div></section></div></div> }
 
-function AssetDrawer({asset,onClose,onAction}:{asset:Asset;onClose:()=>void;onAction:(m:string)=>void}) { const closeRef=useRef<HTMLButtonElement>(null); useEffect(()=>{const previous=document.activeElement as HTMLElement|null; closeRef.current?.focus(); return()=>previous?.focus()},[]); return <><div className="scrim" onClick={onClose}/><aside className="drawer" role="dialog" aria-modal="true" aria-labelledby="asset-drawer-title"><div className="drawer-head"><div><span>{asset.id}</span><h2 id="asset-drawer-title">{asset.name}</h2></div><button ref={closeRef} aria-label="Close asset details" onClick={onClose}><X size={18}/></button></div><div className="asset-summary"><div className="asset-hero"><Truck size={30}/></div><div><Badge tone={asset.status==='Available'?'success':asset.status==='Out of service'?'danger':'warning'}>{asset.status}</Badge><p>{asset.type} · {asset.location}</p></div></div><div className="drawer-metrics"><div><span>Health score</span><strong>{asset.health}</strong><Health value={asset.health}/></div><div><span>Meter</span><strong>{asset.hours.toLocaleString()}</strong><small>engine hours</small></div><div><span>Next service</span><strong>{asset.nextService}</strong><small>preventive maintenance</small></div><div><span>Operator</span><strong className="small-strong">{asset.operator}</strong><small>current assignment</small></div></div><section><h3>Operating timeline</h3>{[['Today','Telematics health snapshot received'],['Aug 20','Daily inspection passed'],['Aug 16','Fuel transaction matched'],['Aug 02','Preventive maintenance closed']].map(([d,e])=><div className="timeline" key={e}><span>{d}</span><i/><p>{e}</p></div>)}</section><div className="drawer-actions"><button className="secondary" onClick={()=>onAction('Asset report prepared')}>Generate report</button><button className="primary" onClick={()=>onAction(`Work order draft created for ${asset.id}`)}>Create work order</button></div></aside></> }
+function AssetDrawer({asset,onClose,onAction}:{asset:Asset;onClose:()=>void;onAction:(m:string)=>void}) { return <ModalDialog title="asset details" labelledBy="asset-drawer-title" variant="drawer" hideDefaultHeader onClose={onClose}><div className="drawer-head"><div><span>{asset.id}</span><h2 id="asset-drawer-title">{asset.name}</h2></div><button className="icon-button" aria-label="Close asset details" onClick={onClose}>×</button></div><div className="asset-summary"><div className="asset-hero"><Truck size={30}/></div><div><Badge tone={asset.status==='Available'?'success':asset.status==='Out of service'?'danger':'warning'}>{asset.status}</Badge><p>{asset.type} · {asset.location}</p></div></div><div className="drawer-metrics"><div><span>Health score</span><strong>{asset.health}</strong><Health value={asset.health}/></div><div><span>Meter</span><strong>{asset.hours.toLocaleString()}</strong><small>engine hours</small></div><div><span>Next service</span><strong>{asset.nextService}</strong><small>preventive maintenance</small></div><div><span>Operator</span><strong className="small-strong">{asset.operator}</strong><small>current assignment</small></div></div><section><h3>Operating timeline</h3>{[['Today','Telematics health snapshot received'],['Aug 20','Daily inspection passed'],['Aug 16','Fuel transaction matched'],['Aug 02','Preventive maintenance closed']].map(([d,e])=><div className="timeline" key={e}><span>{d}</span><i/><p>{e}</p></div>)}</section><div className="drawer-actions"><button className="secondary" onClick={()=>onAction('Asset report prepared')}>Generate report</button><button className="primary" onClick={()=>onAction(`Work order draft created for ${asset.id}`)}>Create work order</button></div></ModalDialog> }
 
-function CommandPalette({onClose,onPage,onAsset}:{onClose:()=>void;onPage:(p:string)=>void;onAsset:(a:Asset)=>void}) { const [q,setQ]=useState(''); const matches=assets.filter(a=>`${a.id} ${a.name}`.toLowerCase().includes(q.toLowerCase())).slice(0,4); return <div className="command-scrim" onMouseDown={onClose}><div className="command" role="dialog" aria-modal="true" aria-label="Search and navigation" onMouseDown={e=>e.stopPropagation()}><label><Search size={18}/><span className="sr-only">Search or jump to</span><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search or jump to…"/><button aria-label="Close search" onClick={onClose}>esc</button></label><p>Quick navigation</p><div className="command-grid">{nav.slice(0,6).map(([n,Icon])=><button key={n} onClick={()=>onPage(n)}><Icon size={16}/>{n}</button>)}</div>{q&&<><p>Assets</p>{matches.map(a=><button className="command-result" key={a.id} onClick={()=>onAsset(a)}><Truck size={16}/><span><b>{a.name}</b><small>{a.id} · {a.location}</small></span><ChevronRight size={15}/></button>)}</>}</div></div> }
+function CommandPalette({onClose,onPage,onAsset}:{onClose:()=>void;onPage:(p:string)=>void;onAsset:(a:Asset)=>void}) { const [q,setQ]=useState(''); const matches=assets.filter(a=>`${a.id} ${a.name}`.toLowerCase().includes(q.toLowerCase())).slice(0,4); return <ModalDialog title="Search and navigation" variant="command" hideDefaultHeader onClose={onClose}><div className="command"><label><Search size={18}/><span className="sr-only">Search or jump to</span><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search or jump to…"/><button aria-label="Close search" onClick={onClose}>Esc</button></label><p>Quick navigation</p><div className="command-grid">{nav.slice(0,6).map(([n,Icon])=><button key={n} onClick={()=>onPage(n)}><Icon size={16}/>{n}</button>)}</div>{q&&<><p>Assets</p>{matches.map(a=><button className="command-result" key={a.id} onClick={()=>onAsset(a)}><Truck size={16}/><span><b>{a.name}</b><small>{a.id} · {a.location}</small></span><ChevronRight size={15}/></button>)}</>}</div></ModalDialog> }
 
 export default App
