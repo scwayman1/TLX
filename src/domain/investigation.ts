@@ -1,3 +1,5 @@
+import { DEMO_CLOCK_ISO, SYNTHETIC_PERSONA } from './demo-fixture'
+
 export type Evidence = {
   id: string
   label: string
@@ -19,7 +21,7 @@ export type ToolRun = {
 }
 export type TimelineEvent = {
   id: string
-  kind: 'intent.recorded' | 'grounding.completed' | 'interpretation.prepared' | 'tool.proposed' | 'tool.approved' | 'tool.rejected' | 'tool.completed'
+  kind: 'intent.recorded' | 'grounding.completed' | 'interpretation.prepared' | 'tool.proposed' | 'tool.approved' | 'tool.rejected' | 'tool.completed' | 'decision.recorded'
   label: string
   actorId: string
   occurredAt: string
@@ -38,8 +40,24 @@ export type Investigation = {
 }
 export type ToolProposal = Pick<ToolRun, 'tool' | 'purpose' | 'inputSummary'>
 
-const now = () => new Date().toISOString()
-const event = (kind: TimelineEvent['kind'], label: string, actorId: string): TimelineEvent => ({ id: `${kind}-${Date.now()}-${Math.random()}`, kind, label, actorId, occurredAt: now() })
+// All identity in this flow derives from the fixed demo clock and the
+// investigation's own typed state — never from wall clock, randomness, or
+// module-global counters — so identical flows yield identical audit records.
+const now = () => DEMO_CLOCK_ISO
+
+const nextTimelineEventId = (timeline: TimelineEvent[], kind: TimelineEvent['kind']): string => {
+  const existingIds = new Set(timeline.map(item => item.id))
+  let sequence = timeline.filter(item => item.kind === kind).length + 1
+  let candidate = `${kind}-${String(sequence).padStart(4, '0')}`
+  while (existingIds.has(candidate)) {
+    sequence += 1
+    candidate = `${kind}-${String(sequence).padStart(4, '0')}`
+  }
+  return candidate
+}
+
+const appendEvent = (timeline: TimelineEvent[], kind: TimelineEvent['kind'], label: string, actorId: string): TimelineEvent[] =>
+  [...timeline, { id: nextTimelineEventId(timeline, kind), kind, label, actorId, occurredAt: now() }]
 
 export function createAssetRiskInvestigation(): Investigation {
   return {
@@ -54,22 +72,26 @@ export function createAssetRiskInvestigation(): Investigation {
     facts:['Asset is currently out of service','A required brake assembly is unavailable internally','Tomorrow’s deployment depends on this trailer'],
     inferences:[{statement:'The immediate risk is schedule failure caused by parts availability, not diagnostic uncertainty.',confidence:'High',rationale:'The failed component is identified and internal stock is zero.'},{statement:'Repeat brake findings may indicate a broader maintenance-pattern issue.',confidence:'Medium',rationale:'Three related findings exist, but prior root-cause detail is incomplete.'}],
     recommendation:'Verify preferred-vendor availability, then present expedite-versus-reschedule options for human approval.',
-    timeline:[event('intent.recorded','Operating question recorded','user-scott'),event('grounding.completed','Four internal evidence sources retrieved','agent-operations'),event('interpretation.prepared','Risk interpretation prepared for review','agent-operations')],
+    timeline: appendEvent(appendEvent(appendEvent([],
+      'intent.recorded', 'Operating question recorded', SYNTHETIC_PERSONA.actorId),
+      'grounding.completed', 'Four internal evidence sources retrieved', 'agent-operations'),
+      'interpretation.prepared', 'Risk interpretation prepared for review', 'agent-operations'),
   }
 }
 
 export function proposeToolRun(state: Investigation, proposal: ToolProposal): Investigation {
-  return { ...state, status:'Waiting approval', pendingToolRun:{id:`TOOL-${Date.now()}`,...proposal,status:'Proposed'}, timeline:[...state.timeline,event('tool.proposed',`${proposal.tool} proposed: ${proposal.purpose}`,'agent-operations')] }
+  const proposalSequence = state.timeline.filter(item => item.kind === 'tool.proposed').length + 1
+  return { ...state, status:'Waiting approval', pendingToolRun:{id:`TOOL-${state.id}-${String(proposalSequence).padStart(4, '0')}`,...proposal,status:'Proposed'}, timeline:appendEvent(state.timeline,'tool.proposed',`${proposal.tool} proposed: ${proposal.purpose}`,'agent-operations') }
 }
 export function approveToolRun(state: Investigation, actorId: string): Investigation {
   if (!state.pendingToolRun || state.pendingToolRun.status !== 'Proposed') throw new Error('No proposed tool run')
-  return { ...state,status:'Enriching',pendingToolRun:{...state.pendingToolRun,status:'Approved',approvedBy:actorId},timeline:[...state.timeline,event('tool.approved',`${state.pendingToolRun.tool} approved`,actorId)] }
+  return { ...state,status:'Enriching',pendingToolRun:{...state.pendingToolRun,status:'Approved',approvedBy:actorId},timeline:appendEvent(state.timeline,'tool.approved',`${state.pendingToolRun.tool} approved`,actorId) }
 }
 export function rejectToolRun(state: Investigation, actorId: string, reason: string): Investigation {
   if (!state.pendingToolRun || state.pendingToolRun.status !== 'Proposed') throw new Error('No proposed tool run')
-  return { ...state,status:'Ready for decision',pendingToolRun:{...state.pendingToolRun,status:'Rejected',approvedBy:actorId,rejectionReason:reason},timeline:[...state.timeline,event('tool.rejected',`${state.pendingToolRun.tool} rejected: ${reason}`,actorId)] }
+  return { ...state,status:'Ready for decision',pendingToolRun:{...state.pendingToolRun,status:'Rejected',approvedBy:actorId,rejectionReason:reason},timeline:appendEvent(state.timeline,'tool.rejected',`${state.pendingToolRun.tool} rejected: ${reason}`,actorId) }
 }
 export function executeApprovedToolRun(state: Investigation, output: string): Investigation {
   if (!state.pendingToolRun || state.pendingToolRun.status !== 'Approved') throw new Error('Human approval required')
-  return { ...state,status:'Ready for decision',pendingToolRun:{...state.pendingToolRun,status:'Completed',output},timeline:[...state.timeline,event('tool.completed',`${state.pendingToolRun.tool} completed with visible synthetic output`,'tool-simulator')] }
+  return { ...state,status:'Ready for decision',pendingToolRun:{...state.pendingToolRun,status:'Completed',output},timeline:appendEvent(state.timeline,'tool.completed',`${state.pendingToolRun.tool} completed with visible synthetic output`,'tool-simulator') }
 }

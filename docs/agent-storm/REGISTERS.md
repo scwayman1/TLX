@@ -11,6 +11,7 @@
 | R-005 | Device/action concepts imply unsafe autonomy. | High | No real command; human approval, impact preview, audit, and recovery contract. | Technical/safety | Any executable action is introduced. |
 | R-006 | Demo reliability erodes under rapid iteration. | Medium | TDD, deterministic fixtures/reset, CI gates, rehearsal and backup path. | Quality owner | Flake, console error, build failure, or demo reset drift. |
 | R-007 | Customer evidence is unavailable and hypotheses harden into facts. | High | Preserve hypotheses and explicit evidence gaps; do not fabricate validation. | Product owner | Tranche closes without representative sessions. |
+| R-008 | The SCO-26 decision-plan quote-freshness/expiry text is a static synthetic label, not a live freshness computation; audiences may over-trust it. | Medium | Option cards label evidence as one synthetic quote and require human selection plus rationale; no purchase path exists. | Technical/safety | Quote freshness becomes computed or a second data source appears. |
 
 ## Assumptions
 

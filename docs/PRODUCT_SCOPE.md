@@ -26,7 +26,8 @@ TelemetryX is organized around an operating loop rather than disconnected record
 - Co-piloted asset-risk investigation beginning from a real operating question
 - Grounded facts and confidence-labeled inferences with visible provenance
 - Legible synthetic external-tool proposal, human approval/rejection, and execution states
-- Append-only operating timeline covering intent, grounding, interpretation, approval, and result
+- Synthetic safe-response decision plan (SCO-26): exactly two options (expedite quoted part vs reschedule deployment) with trade-offs, evidence, confidence, and static synthetic quote-freshness labels; explicit human selection (no default) and required rationale with accessible, programmatically associated validation; typed domain error codes (invalid idempotency key, unknown option, rationale required, authorization denied, idempotency conflict, audit integrity) each surfaced in its own accessible region; a frozen synthetic approver policy held outside caller-mutable state (a fixture, NOT authentication or RBAC) that is revalidated before any idempotent replay is accepted; a canonical idempotency-key grammar with injective event IDs; idempotent, non-truncating integration of decision events into the Operating memory timeline; and a fixed demo clock with investigation-scoped IDs so reset/replay, close/reopen, and parallel instances produce identical synthetic records
+- Append-only operating timeline covering intent, grounding, interpretation, approval, result, and recorded decision
 
 - Synthetic portfolio mission control
 - Searchable and filterable fleet registry
