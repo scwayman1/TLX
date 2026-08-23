@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import App from './App'
@@ -45,5 +46,43 @@ describe('TelemetryX operating shell', () => {
     fireEvent.click(screen.getByRole('button', { name: /Parts & inventory/ }))
     expect(screen.getByText('External quote pending')).toBeInTheDocument()
     expect(screen.queryByText('Reserved')).not.toBeInTheDocument()
+  })
+
+  it('opens the component lab from the explicit demo control', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Open design system lab' }))
+
+    expect(screen.getByRole('heading', { name: 'TelemetryX design system' })).toBeInTheDocument()
+    expect(screen.getByText('Synthetic component fixtures')).toBeInTheDocument()
+  })
+
+  it('names the fleet-health date control for assistive technology', () => {
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: 'Change fleet health reporting period' })).toBeInTheDocument()
+  })
+
+  it('exposes mobile navigation state and target semantics', () => {
+    render(<App />)
+
+    const menu = screen.getByRole('button', { name: 'Open navigation' })
+    expect(menu).toHaveAttribute('aria-expanded', 'false')
+    expect(menu).toHaveAttribute('aria-controls', 'primary-navigation')
+  })
+
+  it('contains command-palette focus and restores its trigger', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const trigger = screen.getByRole('button', { name: /Search assets/ })
+
+    await user.click(trigger)
+    const dialog = screen.getByRole('dialog', { name: 'Search and navigation' })
+    expect(dialog).toContainElement(document.activeElement as HTMLElement)
+    await user.tab({ shift: true })
+    expect(dialog).toContainElement(document.activeElement as HTMLElement)
+    await user.keyboard('{Escape}')
+    expect(trigger).toHaveFocus()
   })
 })
