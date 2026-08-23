@@ -56,9 +56,11 @@ export function DecisionPanel({ onRecorded, actorId = SYNTHETIC_PERSONA.actorId,
         workOrderIntentId: 'WO-24091',
         idempotencyKey: `decision:WO-24091:${selected}-v1`,
       })
+      // Operating Memory integration must succeed before this panel claims the
+      // decision is recorded — a failed audit write is never a silent success.
+      onRecorded(result)
       setPlan(result.decisionPlan)
       setRecorded(result)
-      onRecorded(result)
     } catch (error) {
       if (error instanceof DecisionPlanError) {
         if (error.code === 'unknown_option') setOptionError('The selected option is not a valid safe-response option')

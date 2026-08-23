@@ -166,8 +166,11 @@ describe('TelemetryX operating shell', () => {
 
   it('shows one agreeing synthetic persona as decision owner, approver requirement, and recorded actor', () => {
     render(<App />)
-    // The initiating mission-control surface names the persona as decision owner.
-    expect(screen.getByText(/Decision owner/).parentElement?.textContent).toContain(SYNTHETIC_PERSONA.name)
+    // The initiating mission-control surface names the persona as decision
+    // owner WITH the synthetic qualifier — not just the name.
+    const ownerCard = screen.getByText(/Decision owner/).parentElement?.textContent ?? ''
+    expect(ownerCard).toContain(SYNTHETIC_PERSONA.name)
+    expect(ownerCard).toContain(SYNTHETIC_PERSONA.qualifier)
     expect(screen.queryByText(/Dana Foster/)).not.toBeInTheDocument()
 
     openCompletedLookup()

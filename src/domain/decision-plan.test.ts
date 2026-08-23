@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createSafeResponsePlan, recordDecisionPlan, integrateDecisionEvents, DecisionPlanError } from './decision-plan'
+import { authorizedApproverIdFor, createSafeResponsePlan, recordDecisionPlan, integrateDecisionEvents, DecisionPlanError } from './decision-plan'
 import { DEMO_CLOCK_ISO, SYNTHETIC_PERSONA } from './demo-fixture'
 import { createAssetRiskInvestigation } from './investigation'
 
@@ -237,6 +237,56 @@ describe('safe-response decision plan', () => {
     const integrated = integrateDecisionEvents(investigation, [valid])
     const conflicting = { ...valid, rationale: 'Rewritten history' }
     expect(codeOf(() => integrateDecisionEvents(integrated, [conflicting]))).toBe('audit_integrity')
+  })
+
+  it('fails closed on duplicate or invalid events within a single integration batch', () => {
+    const investigation = createAssetRiskInvestigation()
+    const recorded = recordDecisionPlan(createSafeResponsePlan(), baseCommand)
+    const valid = recorded.events[0]
+
+    const codeOf = (fn: () => unknown): string => {
+      try {
+        fn()
+      } catch (error) {
+        expect(error).toBeInstanceOf(DecisionPlanError)
+        return (error as DecisionPlanError).code
+      }
+      throw new Error('expected integration to fail')
+    }
+
+    // Same ID twice in one batch with different content: rejected, never appended twice.
+    expect(codeOf(() => integrateDecisionEvents(investigation, [valid, { ...valid, rationale: 'Different content' }]))).toBe('audit_integrity')
+    // Even exact duplicates within one batch are a corrupt ledger.
+    expect(codeOf(() => integrateDecisionEvents(investigation, [valid, { ...valid }]))).toBe('audit_integrity')
+    // Forged occurredAt is rejected in both integration and record ledger validation.
+    expect(codeOf(() => integrateDecisionEvents(investigation, [{ ...valid, occurredAt: 'not-a-timestamp' }]))).toBe('audit_integrity')
+    expect(codeOf(() => integrateDecisionEvents(investigation, [{ ...valid, occurredAt: '' }]))).toBe('audit_integrity')
+    const forgedTimePlan = { ...recorded.decisionPlan, events: [{ ...valid, occurredAt: 'not-a-timestamp' }] }
+    expect(codeOf(() => recordDecisionPlan(forgedTimePlan, baseCommand))).toBe('audit_integrity')
+    // A ledger event with an unauthorized actor or empty rationale is corrupt even
+    // when the incoming command itself is valid and uses a different key.
+    const otherKey = { ...baseCommand, idempotencyKey: 'decision:WO-24091:other' }
+    const forgedActorPlan = { ...recorded.decisionPlan, events: [{ ...valid, actorId: 'user-dfoster' }] }
+    expect(codeOf(() => recordDecisionPlan(forgedActorPlan, otherKey))).toBe('authorization_denied')
+    const forgedRationalePlan = { ...recorded.decisionPlan, events: [{ ...valid, rationale: '   ' }] }
+    expect(codeOf(() => recordDecisionPlan(forgedRationalePlan, otherKey))).toBe('rationale_required')
+  })
+
+  it('rejects prototype-chain names as options and keeps replay results fully populated', () => {
+    try {
+      authorizedApproverIdFor('toString' as never)
+      expect.unreachable('prototype-chain option was accepted')
+    } catch (error) {
+      expect(error).toBeInstanceOf(DecisionPlanError)
+      expect((error as DecisionPlanError).code).toBe('unknown_option')
+    }
+
+    // An exact replay yields the same fully populated decision plan as the
+    // original acceptance: selected option and boundary statement included.
+    const first = recordDecisionPlan(createSafeResponsePlan(), baseCommand)
+    const replay = recordDecisionPlan(first.decisionPlan, baseCommand)
+    expect(replay.decisionPlan.selectedOptionId).toBe('expedite')
+    expect(replay.decisionPlan.boundaryStatement).toContain('Reservation/purchase not executed')
   })
 
   it('requires a non-empty rationale with the typed rationale_required error', () => {

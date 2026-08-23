@@ -93,9 +93,10 @@ const SYNTHETIC_APPROVER_POLICY: Readonly<Record<DecisionPlanOptionId, string>> 
 })
 
 export function authorizedApproverIdFor(optionId: DecisionPlanOptionId): string {
-  const approverId = SYNTHETIC_APPROVER_POLICY[optionId]
-  if (!approverId) throw new DecisionPlanError('unknown_option', `Unknown decision-plan option: ${String(optionId)}`)
-  return approverId
+  if (!Object.hasOwn(SYNTHETIC_APPROVER_POLICY, optionId)) {
+    throw new DecisionPlanError('unknown_option', `Unknown decision-plan option: ${String(optionId)}`)
+  }
+  return SYNTHETIC_APPROVER_POLICY[optionId]
 }
 
 function validateOptionAndAuthorization(state: SafeResponsePlan, command: DecisionPlanCommand): void {
@@ -120,14 +121,32 @@ const BOUNDARY_STATEMENTS: Record<DecisionPlanOptionId, string> = {
 const eventIdForKey = (idempotencyKey: string) => `decision-${idempotencyKey}`
 
 // The ledger is caller-held state, so it is never trusted implicitly: every
-// event must carry its canonical derived ID and IDs must be unique before a
-// command can be accepted against it.
+// event must be a command this module could itself have accepted — canonical
+// ID and key, canonical option, authorized actor, non-empty rationale, and
+// the fixed demo clock — and IDs must be unique across the whole ledger.
+function validateLedgerEvent(event: DecisionPlanEvent): void {
+  validateIdempotencyKey(event.idempotencyKey, event.workOrderIntentId)
+  if (event.id !== eventIdForKey(event.idempotencyKey)) {
+    throw new DecisionPlanError('audit_integrity', `Event ${event.id} does not match its canonical identity`)
+  }
+  if (!CANONICAL_OPTION_IDS.includes(event.optionId)) {
+    throw new DecisionPlanError('unknown_option', `Unknown decision-plan option: ${String(event.optionId)}`)
+  }
+  if (event.actorId !== authorizedApproverIdFor(event.optionId)) {
+    throw new DecisionPlanError('authorization_denied', `Actor ${event.actorId} is not the authorized synthetic approver for option ${event.optionId}`)
+  }
+  if (!event.rationale.trim()) {
+    throw new DecisionPlanError('rationale_required', 'Decision rationale is required')
+  }
+  if (event.occurredAt !== DEMO_CLOCK_ISO) {
+    throw new DecisionPlanError('audit_integrity', `Event ${event.id} does not carry the fixed demo-clock timestamp`)
+  }
+}
+
 function validateLedgerIntegrity(events: DecisionPlanEvent[]): void {
   const seen = new Set<string>()
   for (const event of events) {
-    if (event.id !== eventIdForKey(event.idempotencyKey)) {
-      throw new DecisionPlanError('audit_integrity', `Event ${event.id} does not match its canonical identity`)
-    }
+    validateLedgerEvent(event)
     if (seen.has(event.id)) {
       throw new DecisionPlanError('audit_integrity', `Duplicate decision event ID in ledger: ${event.id}`)
     }
@@ -180,7 +199,17 @@ export function recordDecisionPlan(state: SafeResponsePlan, command: DecisionPla
     if (!samePayload) {
       throw new DecisionPlanError('idempotency_conflict', 'Idempotency key replayed with a different payload')
     }
-    return { decisionPlan: state, events: state.events }
+    // Exact replay: a no-op on the ledger, but the returned plan is as fully
+    // populated as the original acceptance was.
+    return {
+      decisionPlan: {
+        ...state,
+        selectedOptionId: prior.optionId,
+        reservationExecuted: false,
+        boundaryStatement: BOUNDARY_STATEMENTS[prior.optionId],
+      },
+      events: state.events,
+    }
   }
   if (state.events.some(item => item.id === id)) {
     throw new DecisionPlanError('audit_integrity', `Duplicate decision event ID rejected: ${id}`)
@@ -213,21 +242,10 @@ export function recordDecisionPlan(state: SafeResponsePlan, command: DecisionPla
 // unintegrated event lands deterministically in ledger order or the whole
 // call fails closed — a ledger is never silently truncated to its last event.
 export function integrateDecisionEvents(investigation: Investigation, events: DecisionPlanEvent[]): Investigation {
-  for (const event of events) {
-    validateIdempotencyKey(event.idempotencyKey, event.workOrderIntentId)
-    if (event.id !== eventIdForKey(event.idempotencyKey)) {
-      throw new DecisionPlanError('audit_integrity', `Event ${event.id} does not match its canonical identity`)
-    }
-    if (!CANONICAL_OPTION_IDS.includes(event.optionId)) {
-      throw new DecisionPlanError('unknown_option', `Unknown decision-plan option: ${String(event.optionId)}`)
-    }
-    if (event.actorId !== authorizedApproverIdFor(event.optionId)) {
-      throw new DecisionPlanError('authorization_denied', `Actor ${event.actorId} is not the authorized synthetic approver for option ${event.optionId}`)
-    }
-    if (!event.rationale.trim()) {
-      throw new DecisionPlanError('rationale_required', 'Decision rationale is required')
-    }
-  }
+  // Same fail-closed validation the record path applies, including uniqueness
+  // WITHIN this batch — a ledger carrying duplicate IDs is corrupt and is
+  // never partially integrated.
+  validateLedgerIntegrity(events)
 
   const existingById = new Map(investigation.timeline.map(item => [item.id, item]))
   const additions: TimelineEvent[] = []

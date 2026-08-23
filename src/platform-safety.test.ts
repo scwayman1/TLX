@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest'
 const sources = import.meta.glob('./**/*.{ts,tsx,css}', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 
 describe('platform safety contract', () => {
-  it('references no external network origin from any source or style file', () => {
-    const entries = Object.entries(sources).filter(([path]) => !/\.test\.(ts|tsx)$/.test(path))
+  it('references no external network origin from any source, style, or test file', () => {
+    const entries = Object.entries(sources)
     expect(entries.length).toBeGreaterThan(5)
     for (const [path, content] of entries) {
       expect(content, `${path} must not reference an external origin`).not.toMatch(/https?:\/\//)
