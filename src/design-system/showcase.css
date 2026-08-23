@@ -14,7 +14,7 @@
 .section-title p { margin-top: 2px; color: var(--ds-color-text-muted); font-size: var(--ds-text-body-sm); }
 .swatch-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--ds-color-border); background: var(--ds-color-border); gap: 1px; }
 .swatch { display: grid; grid-template-columns: 40px 1fr; gap: 1px var(--ds-space-3); min-width: 0; padding: var(--ds-space-3); background: var(--ds-color-surface); }
-.swatch i { grid-row: 1 / 4; width: 40px; height: 56px; border: 1px solid rgb(23 35 29 / 0.16); border-radius: var(--ds-radius-xs); }
+.swatch i { grid-row: 1 / 4; width: 40px; height: 56px; border: 1px solid var(--ds-color-border); border-radius: var(--ds-radius-xs); }
 .swatch strong, .swatch code, .swatch span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .swatch strong { font-size: var(--ds-text-body-sm); }
 .swatch code, .swatch span { color: var(--ds-color-text-muted); font-size: 11px; }
@@ -34,7 +34,7 @@
 .lab-card { padding: var(--ds-space-5); border: 1px solid var(--ds-color-border); border-radius: var(--ds-radius-md); background: var(--ds-color-surface); }
 .lab-card h3 { margin: 0 0 var(--ds-space-4); font-size: var(--ds-text-body); }
 .lab-actions, .badge-line { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: center; }
-.danger-button { color: white; border-color: var(--ds-color-danger); background: var(--ds-color-danger); }
+.danger-button { color: var(--ds-brand-on-primary); border-color: var(--ds-color-danger); background: var(--ds-color-danger); }
 .lab-card label { display: grid; gap: var(--ds-space-2); margin-top: var(--ds-space-3); color: var(--ds-color-text-muted); font-size: var(--ds-text-body-sm); font-weight: 650; }
 .field { display: flex; align-items: center; gap: var(--ds-space-2); padding: 0 var(--ds-space-3); border: 1px solid var(--ds-color-border-strong); border-radius: var(--ds-radius-sm); background: var(--ds-color-surface); }
 .field input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; }

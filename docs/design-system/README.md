@@ -1,13 +1,14 @@
 # Consuming and extending the TelemetryX design system
 
-The system has four synchronized layers:
+The system has five generated/synchronized layers:
 
 1. `/DESIGN.md` — normative tokens, rationale, and usage rules.
 2. `/design-tokens/tokens.json` — generated W3C DTCG interchange.
 3. `/design-tokens/tailwind-v4.css` — generated Tailwind v4-style `@theme` interchange; the app does not use Tailwind.
-4. `/src/design-system/tokens.css` — reviewed React/CSS implementation map with semantic custom-property names.
+4. `/src/design-system/tokens.css` — generated runtime CSS custom properties with TelemetryX semantic names.
+5. `/src/design-system/tokens.generated.ts` — generated typed/runtime manifest consumed by the component lab.
 
-Run `npm run design:lint` after changing `DESIGN.md`, then `npm run design:tokens`. Commit both generated files. The pinned Google alpha package is a development dependency; no design-system package is shipped in the application bundle.
+Run `npm run design:lint` after changing `DESIGN.md`, then `npm run design:generate` and `npm run design:check`. Commit all four generated artifacts. `npm run design:audit` enforces a zero raw-color-literal threshold outside generated token CSS. The exactly pinned `@google/design.md` 0.4.0 package is a development dependency and is not shipped in the application bundle.
 
 ## Use in React and CSS
 

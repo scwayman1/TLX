@@ -33,7 +33,7 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   transform: translateY(-150%);
   padding: var(--ds-space-2) var(--ds-space-3);
   border-radius: var(--ds-radius-sm);
-  color: white;
+  color: var(--ds-brand-on-primary);
   background: var(--ds-brand-forest);
   font-weight: 700;
 }

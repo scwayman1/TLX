@@ -8,7 +8,7 @@
 .investigation-thread { display: grid; align-content: start; gap: var(--ds-space-3); min-width: 0; }
 .thread-turn, .tool-run, .copilot-composer, .evidence-card, .memory-panel { border: 1px solid var(--ds-color-border); border-radius: var(--ds-radius-md); background: var(--ds-color-surface); }
 .thread-turn { display: flex; gap: var(--ds-space-3); padding: var(--ds-space-5); }
-.thread-avatar { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; color: white; background: var(--ds-brand-forest); font-size: 11px; font-weight: 700; }
+.thread-avatar { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; color: var(--ds-brand-on-primary); background: var(--ds-brand-forest); font-size: 11px; font-weight: 700; }
 .agent-avatar { color: var(--ds-color-success-on-soft); background: var(--ds-color-success-soft); }
 .thread-turn > div:last-child { min-width: 0; flex: 1; }
 .thread-turn > div > span { color: var(--ds-color-text-muted); font-size: var(--ds-text-label); }

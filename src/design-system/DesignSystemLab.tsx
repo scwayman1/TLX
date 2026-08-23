@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, Check, Clock3, LockKeyhole, MoreHorizontal, Search, ShieldAlert, X } from 'lucide-react'
 import { ModalDialog } from './ModalDialog'
+import { designTokens } from './tokens.generated'
 import './showcase.css'
 
 type BadgeProps = { children: React.ReactNode; tone?: string }
@@ -14,6 +15,27 @@ const states = [
   ['partial', 'Partial evidence', '3 of 4 synthetic sources available. Vendor coverage is missing.', 'Review available evidence'],
   ['permission', 'Permission required', 'Approval needs a fleet manager. Restricted data is not shown.', 'Return to queue'],
   ['success', 'Approval recorded', 'Scott approved the synthetic lookup. The tool has not run.', 'Continue'],
+] as const
+
+function contrastRatio(foreground: string, background: string) {
+  const luminance = (hex: string) => {
+    const channels = hex.slice(1, 7).match(/.{2}/g)!.map(value => Number.parseInt(value, 16) / 255)
+      .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+  }
+  const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a)
+  return ((values[0] + 0.05) / (values[1] + 0.05)).toFixed(2)
+}
+
+const swatches = [
+  ['Canvas', designTokens.colors.canvas, designTokens.colors.text, 'Text'],
+  ['Surface', designTokens.colors.surface, designTokens.colors.text, 'Text'],
+  ['Operational', designTokens.colors.primary, designTokens.colors['on-primary'], 'On primary'],
+  ['Success', designTokens.colors['success-soft'], designTokens.colors['on-success-soft'], 'Success ink'],
+  ['Warning', designTokens.colors['warning-soft'], designTokens.colors['on-warning-soft'], 'Warning ink'],
+  ['Danger', designTokens.colors['danger-soft'], designTokens.colors['on-danger-soft'], 'Danger ink'],
+  ['Information', designTokens.colors['info-soft'], designTokens.colors['on-info-soft'], 'Information ink'],
+  ['Sparse signal', designTokens.colors['brand-lime-signal'], designTokens.colors['brand-ink'], 'Brand ink'],
 ] as const
 
 export function DesignSystemLab() {
@@ -42,22 +64,17 @@ export function DesignSystemLab() {
     <section id="foundations" className="lab-section">
       <div className="section-title"><span>01</span><div><h2>Foundations</h2><p>Color, contrast, type, and spacing encode calm hierarchy—not decoration.</p></div></div>
       <div className="swatch-grid" aria-label="Semantic color swatches">
-        {[
-          ['Canvas', '#F4F1E8', 'Graphite 14.36:1'], ['Surface', '#FFFEFA', 'Graphite 16.07:1'],
-          ['Operational', '#185C43', 'White 7.92:1'], ['Success', '#E3F2E8', 'Forest 9.35:1'],
-          ['Warning', '#FFF1D4', 'Brown 9.78:1'], ['Danger', '#FCE9E5', 'Red ink 9.57:1'],
-          ['Information', '#E7F2F5', 'Blue ink 9.85:1'], ['Sparse signal', '#C7F04D', 'Graphite 12.36:1'],
-        ].map(([name, color, contrast]) => <div className="swatch" key={name}><i style={{ background: color }} /><strong>{name}</strong><code>{color}</code><span>{contrast}</span></div>)}
+        {swatches.map(([name, color, foreground, foregroundName]) => <div className="swatch" key={name}><i style={{ background: color }} /><strong>{name}</strong><code>{color}</code><span>{foregroundName} {contrastRatio(foreground, color)}:1</span></div>)}
       </div>
       <div className="type-specimen">
-        <div><span>Display · 32/36</span><h1>Exception response</h1></div>
-        <div><span>Heading · 24/29</span><h2>Evidence and ownership</h2></div>
-        <div><span>Body · 15/23</span><p>Operators scan the signal, safety boundary, owner, and next action without losing provenance.</p></div>
+        <div><span>Display · {designTokens.typography.display.fontSize}/{designTokens.typography.display.lineHeight}</span><h1>Exception response</h1></div>
+        <div><span>Heading · {designTokens.typography['heading-lg'].fontSize}/{designTokens.typography['heading-lg'].lineHeight}</span><h2>Evidence and ownership</h2></div>
+        <div><span>Body · {designTokens.typography.body.fontSize}/{designTokens.typography.body.lineHeight}</span><p>Operators scan the signal, safety boundary, owner, and next action without losing provenance.</p></div>
         <div><span>Numeric · tabular</span><strong className="lab-number">94.6%</strong></div>
         <div><span>Identifier · mono</span><code>INV-TRL-443-01</code></div>
       </div>
       <div className="spacing-scale" aria-label="Spacing scale">
-        {[4, 8, 12, 16, 24, 32, 48, 64].map(value => <div key={value}><i style={{ width: value }} /><span>{value}px</span></div>)}
+        {Object.entries(designTokens.spacing).filter(([key]) => !['0', '5', '10'].includes(key)).map(([key, value]) => <div key={key}><i style={{ width: value }} /><span>{value}</span></div>)}
       </div>
     </section>
 

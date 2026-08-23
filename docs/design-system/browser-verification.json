@@ -54,7 +54,7 @@
       "bodyWidth": 1425,
       "horizontalOverflow": false,
       "title": "TelemetryX design system",
-      "active": "body"
+      "active": "Open design system lab"
     },
     {
       "viewport": [
@@ -68,10 +68,53 @@
       "active": "body"
     }
   ],
+  "reflow": [
+    {
+      "label": "200%",
+      "equivalentCssViewport": 720,
+      "viewport": [
+        720,
+        900
+      ],
+      "documentWidth": 720,
+      "bodyWidth": 720,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    },
+    {
+      "label": "400%",
+      "equivalentCssViewport": 360,
+      "viewport": [
+        360,
+        900
+      ],
+      "documentWidth": 360,
+      "bodyWidth": 360,
+      "horizontalOverflow": false,
+      "title": "Mission control",
+      "active": "body"
+    }
+  ],
+  "keyboard": {
+    "mobileDrawer": {
+      "named": true,
+      "focusInside": true,
+      "mainInert": true,
+      "topbarInert": true
+    },
+    "missionControlTableReached": true
+  },
+  "forcedColors": {
+    "emulated": true,
+    "screenshot": "mission-control-forced-colors.png"
+  },
   "requests": [
     "http://127.0.0.1:4173/",
-    "http://127.0.0.1:4173/assets/index-6GLmHCy0.js",
-    "http://127.0.0.1:4173/assets/index-DAk1xy3G.css"
+    "http://127.0.0.1:4173/assets/index-BoCaDtj5.js",
+    "http://127.0.0.1:4173/assets/index-C2dn-qia.css",
+    "http://127.0.0.1:4173/assets/DesignSystemLab-o06-JQLS.js",
+    "http://127.0.0.1:4173/assets/DesignSystemLab-1FOKh6pF.css"
   ],
   "externalRequests": [],
   "consoleErrors": []

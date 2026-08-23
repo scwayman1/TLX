@@ -34,6 +34,7 @@ colors:
   on-info-soft: "#173F52"
   disabled: "#D8DCD7"
   on-disabled: "#58615B"
+  overlay: "#0F1B1585"
 typography:
   display:
     fontFamily: "Segoe UI Variable, Segoe UI, system-ui, sans-serif"
@@ -99,6 +100,15 @@ spacing:
   12: 48px
   16: 64px
 components:
+  layout-sidebar:
+    width: 248px
+  layout-topbar:
+    height: 64px
+  layout-content:
+    width: 1440px
+  modal-overlay:
+    backgroundColor: "{colors.overlay}"
+    textColor: "{colors.on-primary}"
   brand-wordmark:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.brand-ink}"
@@ -210,7 +220,7 @@ components:
 
 TelemetryX is an **OPERATE surface first and a MONITOR surface second**. It is an operating ledger for fleet exceptions: a user must quickly scan what is unsafe or blocked, the evidence behind it, current ownership, timing, and the next accountable action. The selected visual direction is **Operating Ledger**: industrial precision with calm human accountability.
 
-The normative values live in the YAML front matter. Tokens are intentionally layered:
+The normative values live in the YAML front matter. `npm run design:generate` deterministically produces the DTCG/Tailwind exports, runtime CSS custom properties, and typed runtime manifest; `npm run design:check` fails on any committed drift. Tokens are intentionally layered:
 
 - **Brand tokens** describe the durable identity: `{colors.brand-ink}`, `{colors.brand-forest}`, `{colors.brand-lime-signal}`, and `{colors.primary}`.
 - **Semantic tokens** describe meaning independent of a component: `{colors.canvas}`, `{colors.text-muted}`, `{colors.warning}`, `{colors.danger}`, `{colors.focus}`, and their paired containers/on-colors.
@@ -250,6 +260,23 @@ Use the tested local/system stack in `{typography.body}`. The application must n
 Financial values include currency and units. Percentages, dates, durations, and meter values use tabular numerals. Right-align comparable numeric columns. Do not abbreviate a number when the abbreviation obscures decision context.
 
 ## Layout
+
+The exporter’s alpha schema does not yet model elevation or motion, so these normative TelemetryX extensions are machine-readable here and are copied into the DTCG `$extensions.telemetryx` object by the generator:
+
+```telemetryx-contracts
+{
+  "elevation": {
+    "level-1": "0 1px 2px rgb(23 35 29 / 0.06)",
+    "level-2": "0 8px 24px rgb(23 35 29 / 0.12)",
+    "level-3": "0 18px 48px rgb(23 35 29 / 0.18)"
+  },
+  "motion": {
+    "duration-fast": "120ms",
+    "duration-spatial": "180ms",
+    "ease-out": "cubic-bezier(0.2, 0, 0, 1)"
+  }
+}
+```
 
 Use the 4px spacing scale from `{spacing.1}` through `{spacing.16}`. Prefer `{spacing.3}`, `{spacing.4}`, `{spacing.5}`, `{spacing.6}`, and `{spacing.8}` for component composition. One-off spacing requires a documented geometry reason.
 
@@ -314,7 +341,7 @@ Iconography uses Lucide already present in the repository. Default icon sizes ar
 - Use token references and semantic names; add a token only for a repeated decision role or stable system property.
 - Keep facts, interpretations, approvals, and execution results inspectably separate.
 - Verify 320/760/1100 widths, keyboard order, zoom/reflow, contrast, dialog focus, reduced motion, console output, and network requests.
-- Extend the system through `DESIGN.md`, regenerate exports, then map the same decision into the CSS token layer.
+- Extend the system through `DESIGN.md`, then regenerate every runtime/export artifact from that source.
 - Use the brand/semantic/component distinction in app, email, deck, and report work. Cross-artifact consumers should use exported semantic values and preserve hierarchy; they should not copy component CSS.
 
 ### Don't
@@ -330,7 +357,8 @@ Regenerate and validate on Windows from the repository root:
 
 ```bash
 npm run design:lint
-npm run design:tokens
+npm run design:generate
+npm run design:check
 ```
 
-The scripts call the pinned package entry point directly because the published 0.4.0 Windows npm shim can exit successfully without forwarding CLI output. Commit regenerated outputs with every normative token change. The application CSS is a deliberate implementation mapping because the alpha exporter does not generate TLX's semantic custom-property names automatically.
+The scripts call the exactly pinned `@google/design.md` 0.4.0 package entry point directly because its Windows npm shim can exit successfully without forwarding CLI output. The generator captures the CLI output without shell redirection, then derives TelemetryX runtime names from the same front matter. Commit regenerated outputs with every normative token change. `npm run design:audit` rejects raw color literals outside generated token CSS; local geometry values remain allowed where component anatomy—not a reusable semantic decision—requires them.
