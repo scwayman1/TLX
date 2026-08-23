@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import App from './App'
+import { SYNTHETIC_ACTIVE_ACTOR_ID } from './domain/investigation'
 
 afterEach(cleanup)
 
@@ -66,7 +67,9 @@ describe('TelemetryX operating shell', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Record decision' }))
 
     expect(screen.getByText(/Reservation\/purchase not executed · no supplier was contacted/)).toBeInTheDocument()
-    expect(screen.getAllByText(/user-dfoster/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(SYNTHETIC_ACTIVE_ACTOR_ID).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/user-dfoster/)).not.toBeInTheDocument()
+    expect(screen.getByText(/synthetic active actor/i)).toBeInTheDocument()
     expect(screen.getByText('WO-24091')).toBeInTheDocument()
   })
 
@@ -143,6 +146,27 @@ describe('TelemetryX operating shell', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
+  it('surfaces the required-rationale validation as a distinct associated alert', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Investigate with agent' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Approve lookup' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Run approved tool' }))
+    fireEvent.click(screen.getByRole('radio', { name: /Expedite the quoted BA-14TL assembly/ }))
+
+    const rationale = screen.getByLabelText('Decision rationale')
+    expect(rationale).toHaveAttribute('aria-invalid', 'false')
+    expect(rationale).not.toHaveAttribute('aria-describedby')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Record decision' }))
+    expect(rationale).toHaveAttribute('aria-invalid', 'true')
+    expect(rationale).toHaveAccessibleDescription('Decision rationale is required')
+    const alerts = screen.getAllByRole('alert')
+    expect(alerts.some(alert => alert.textContent === 'Decision rationale is required')).toBe(true)
+    // The option-group association is preserved.
+    expect(screen.getByRole('group', { name: 'Safe response option' })).toBeInTheDocument()
+    expect(rationale).not.toHaveAccessibleDescription(/Select a safe-response option/)
+  })
+
   it('appends the recorded decision to the investigation Operating memory timeline', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Investigate with agent' }))
@@ -152,16 +176,16 @@ describe('TelemetryX operating shell', () => {
     fireEvent.change(screen.getByLabelText('Decision rationale'), { target: { value: 'Deployment tomorrow depends on this trailer' } })
     fireEvent.click(screen.getByRole('button', { name: 'Record decision' }))
 
-    const eventId = screen.getAllByText(/^decision-WO-24091-/)[0].textContent as string
+    const eventId = screen.getAllByText(/^decision-decision%3AWO-24091/)[0].textContent as string
     const memoryPanel = screen.getByText('Operating memory').closest('div.memory-panel') as HTMLElement
     const decisionEntry = within(memoryPanel).getByText(/Decision recorded: expedite/)
     expect(decisionEntry.textContent).toContain(eventId)
     expect(decisionEntry.textContent).toContain('WO-24091')
-    expect(within(memoryPanel).getByText(/user-dfoster/)).toBeInTheDocument()
+    expect(within(memoryPanel).getAllByText(SYNTHETIC_ACTIVE_ACTOR_ID).length).toBeGreaterThan(0)
     expect(within(memoryPanel).getAllByText(/^2026-08-21T15:00:00/).length).toBeGreaterThan(0)
   })
 
-  it('yields identical audit records across reset-and-replay of the identical flow', () => {
+  it('yields identical complete Operating Memory across initial open, reset, close/reopen, and multiple App instances', () => {
     const runFlowAndCaptureAudit = (startFresh: boolean) => {
       if (startFresh) fireEvent.click(screen.getByRole('button', { name: 'Investigate with agent' }))
       fireEvent.click(screen.getByRole('button', { name: 'Approve lookup' }))
@@ -170,7 +194,7 @@ describe('TelemetryX operating shell', () => {
       fireEvent.change(screen.getByLabelText('Decision rationale'), { target: { value: 'Quote cannot be verified' } })
       fireEvent.click(screen.getByRole('button', { name: 'Record decision' }))
       return {
-        event: screen.getAllByText(/^decision-WO-24091-/)[0].textContent,
+        event: screen.getAllByText(/^decision-decision%3AWO-24091/)[0].textContent,
         recordedAt: screen.getAllByText(/^2026-08-21T15:00:00/).at(-1)?.textContent,
       }
     }
@@ -182,5 +206,26 @@ describe('TelemetryX operating shell', () => {
 
     expect(replayedRun.event).toBe(firstRun.event)
     expect(replayedRun.recordedAt).toBe(firstRun.recordedAt)
+
+    const captureMemory = (): string[] => {
+      const memoryPanel = screen.getByText('Operating memory').closest('div.memory-panel') as HTMLElement
+      return Array.from(memoryPanel.querySelectorAll(':scope > div > div, :scope > div')).map(node =>
+        Array.from(node.querySelectorAll('b, small')).map(part => part.textContent).join('|'),
+      ).filter(text => text.length > 0)
+    }
+    const firstMemory = captureMemory()
+
+    // Close/reopen the investigation and run the identical flow again.
+    fireEvent.click(screen.getByRole('button', { name: '← Mission control' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Investigate with agent' }))
+    runFlowAndCaptureAudit(false)
+    expect(captureMemory()).toEqual(firstMemory)
+
+    // A separate App instance running the identical flow produces identical Operating Memory.
+    cleanup()
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Investigate with agent' }))
+    runFlowAndCaptureAudit(false)
+    expect(captureMemory()).toEqual(firstMemory)
   })
 })
