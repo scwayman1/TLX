@@ -1,0 +1,11 @@
+# Security headers served by Cloudflare Pages (copied into dist/ by Vite).
+# The app is fully self-contained: no external scripts, styles, fonts, or
+# API calls (enforced by src/platform-safety.test.ts), so the CSP allows
+# only same-origin resources. 'unsafe-inline' applies to style attributes
+# only (React inline styles for meters/health bars); scripts stay 'self'.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  X-Frame-Options: DENY
