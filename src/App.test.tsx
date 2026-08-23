@@ -172,6 +172,17 @@ describe('TelemetryX operating shell', () => {
     expect(screen.getByRole('dialog', { name: '2022 Ford F-550' })).toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: 'k', ctrlKey: true })
+    fireEvent.click(screen.getByRole('button', { name: /Search assets/, hidden: true }))
+    expect(screen.queryByRole('dialog', { name: 'Search and navigation' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('dialog')).toHaveLength(1)
+
+    await user.keyboard('{Escape}')
+    cleanup()
+    useNarrowViewport()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Open navigation' }))
+    expect(screen.getByRole('dialog', { name: 'Primary workspace' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Search assets/, hidden: true }))
     expect(screen.queryByRole('dialog', { name: 'Search and navigation' })).not.toBeInTheDocument()
     expect(screen.getAllByRole('dialog')).toHaveLength(1)
   })
@@ -184,16 +195,17 @@ describe('TelemetryX operating shell', () => {
     expect(screen.getByRole('dialog', { name: 'Review synthetic approval' })).toBeInTheDocument()
 
     fireEvent.keyDown(window, { key: 'k', metaKey: true })
+    fireEvent.click(screen.getByRole('button', { name: /Search assets/, hidden: true }))
     expect(screen.queryByRole('dialog', { name: 'Search and navigation' })).not.toBeInTheDocument()
     expect(screen.getAllByRole('dialog')).toHaveLength(1)
   })
 
-  it('names the production table scroll regions for keyboard users', async () => {
+  it('names production table scroll regions without adding non-overflowing regions to the tab order', async () => {
     const user = userEvent.setup()
     render(<App />)
-    expect(screen.getByRole('region', { name: 'Active work orders table' })).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('region', { name: 'Active work orders table' })).not.toHaveAttribute('tabindex')
 
     await user.click(screen.getByRole('button', { name: /Assets/ }))
-    expect(screen.getByRole('region', { name: 'Fleet assets table' })).toHaveAttribute('tabindex', '0')
+    expect(screen.getByRole('region', { name: 'Fleet assets table' })).not.toHaveAttribute('tabindex')
   })
 })

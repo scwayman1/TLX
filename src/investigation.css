@@ -1,7 +1,7 @@
 .investigation-page { width: min(100%, var(--ds-content-max)); margin: 0 auto; padding: var(--ds-space-6) clamp(var(--ds-space-5), 3vw, var(--ds-space-12)) var(--ds-space-16); }
 .investigation-head { display: flex; align-items: flex-start; gap: var(--ds-space-5); margin-bottom: var(--ds-space-5); }
 .investigation-head > div { flex: 1; }
-.investigation-head h1 { max-width: 850px; margin: var(--ds-space-1) 0 3px; font-size: 1.7rem; line-height: 1.18; letter-spacing: -.025em; }
+.investigation-head h1 { max-width: 850px; margin: var(--ds-space-1) 0 3px; font-size: 1.7rem; line-height: 1.18; letter-spacing: var(--ds-tracking-display); }
 .investigation-head p { margin: 0; color: var(--ds-color-text-muted); font-size: var(--ds-text-body-sm); }
 .back-link { min-height: var(--ds-control-height); padding: 0; border: 0; color: var(--ds-brand-operational); background: transparent; font-size: var(--ds-text-body-sm); font-weight: 700; cursor: pointer; }
 .investigation-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--ds-space-4); }
@@ -17,13 +17,13 @@
 .truth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ds-space-3); }
 .truth-grid > div { padding: var(--ds-space-4); border-left: 3px solid var(--ds-color-success); background: var(--ds-color-canvas); }
 .truth-grid > div:nth-child(2) { border-left-color: var(--ds-color-info); }
-.truth-grid > div > b { color: var(--ds-color-text-muted); font-size: var(--ds-text-label); letter-spacing: .06em; text-transform: uppercase; }
-.truth-grid p { display: flex; align-items: flex-start; gap: var(--ds-space-2); margin: var(--ds-space-3) 0 0; font-size: var(--ds-text-body-sm); line-height: 1.45; }
+.truth-grid > div > b { color: var(--ds-color-text-muted); font-size: var(--ds-text-label); letter-spacing: .06em; text-transform: var(--ds-transform-label); }
+.truth-grid p { display: flex; align-items: flex-start; gap: var(--ds-space-2); margin: var(--ds-space-3) 0 0; font-size: var(--ds-text-body-sm); line-height: var(--ds-leading-body-sm); }
 .truth-grid p small { display: block; margin-top: 2px; color: var(--ds-color-text-muted); font-size: var(--ds-text-label); }
 .truth-grid > div:nth-child(2) p { display: grid; grid-template-columns: auto 1fr; }
 .recommendation { display: flex; gap: var(--ds-space-3); margin-top: var(--ds-space-3); padding: var(--ds-space-4); border-left: 3px solid var(--ds-brand-operational); color: var(--ds-color-success-on-soft); background: var(--ds-color-success-soft); }
 .recommendation b { font-size: var(--ds-text-body-sm); }
-.recommendation p { margin: 2px 0 0; font-size: var(--ds-text-body-sm); line-height: 1.45; }
+.recommendation p { margin: 2px 0 0; font-size: var(--ds-text-body-sm); line-height: var(--ds-leading-body-sm); }
 .tool-run { padding: var(--ds-space-5); }
 .tool-run-head, .tool-run-head > div, .approval-box, .approval-box > div { display: flex; align-items: center; }
 .tool-run-head { justify-content: space-between; gap: var(--ds-space-3); padding-bottom: var(--ds-space-4); border-bottom: 1px solid var(--ds-color-border); }
@@ -54,8 +54,8 @@
 .evidence-card > span { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-2); }
 .evidence-card > span small { overflow: hidden; color: var(--ds-color-text-muted); font-size: var(--ds-text-label); text-overflow: ellipsis; white-space: nowrap; }
 .evidence-card > b { display: block; margin-top: var(--ds-space-3); font-size: var(--ds-text-body-sm); }
-.evidence-card p { margin: 2px 0 var(--ds-space-3); font-size: var(--ds-text-body-sm); line-height: 1.45; }
-.evidence-card time { display: block; padding-top: var(--ds-space-2); border-top: 1px solid var(--ds-color-border); color: var(--ds-color-text-muted); font-size: var(--ds-text-label); font-variant-numeric: tabular-nums; }
+.evidence-card p { margin: 2px 0 var(--ds-space-3); font-size: var(--ds-text-body-sm); line-height: var(--ds-leading-body-sm); }
+.evidence-card time { display: block; padding-top: var(--ds-space-2); border-top: 1px solid var(--ds-color-border); color: var(--ds-color-text-muted); font-size: var(--ds-text-label); font-variant-numeric: var(--ds-variant-numeric); }
 .memory-panel { padding: var(--ds-space-4); }
 .memory-panel h2 { margin: 0 0 var(--ds-space-3); font-size: var(--ds-text-body); }
 .memory-panel > div { display: grid; grid-template-columns: 10px 1fr; gap: var(--ds-space-2); min-height: 42px; }

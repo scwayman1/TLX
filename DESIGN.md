@@ -74,7 +74,8 @@ typography:
     fontSize: 1.75rem
     fontWeight: 720
     lineHeight: 1
-    fontFeature: "tnum lining-nums"
+    letterSpacing: -0.03em
+    fontFeature: "'tnum', 'lnum'"
   code:
     fontFamily: "Cascadia Mono, SFMono-Regular, Consolas, monospace"
     fontSize: 0.75rem
@@ -265,6 +266,10 @@ The exporter’s alpha schema does not yet model elevation or motion, so these n
 
 ```telemetryx-contracts
 {
+  "typography": {
+    "label-text-transform": "uppercase",
+    "numeric-font-variant": "tabular-nums lining-nums"
+  },
   "elevation": {
     "level-1": "0 1px 2px rgb(23 35 29 / 0.06)",
     "level-2": "0 8px 24px rgb(23 35 29 / 0.12)",
@@ -361,4 +366,10 @@ npm run design:generate
 npm run design:check
 ```
 
-The scripts call the exactly pinned `@google/design.md` 0.4.0 package entry point directly because its Windows npm shim can exit successfully without forwarding CLI output. The generator captures the CLI output without shell redirection, then derives TelemetryX runtime names from the same front matter. Commit regenerated outputs with every normative token change. `npm run design:audit` rejects raw color literals outside generated token CSS; local geometry values remain allowed where component anatomy—not a reusable semantic decision—requires them.
+The scripts call the exactly pinned `@google/design.md` 0.4.0 package entry point directly because its Windows npm shim can exit successfully without forwarding CLI output. The generator captures the CLI output without shell redirection, then derives TelemetryX runtime names from the same front matter. Commit regenerated outputs with every normative token change.
+
+### Enforced audit scope and local geometry
+
+`npm run design:audit` has a threshold of zero. It scans every authored CSS file under `src` plus runtime `.ts`, `.tsx`, `.js`, and `.mjs` source under `src` for raw color representations. In CSS it also rejects unambiguous duplicate declarations of a single normative typography value. Generated `tokens.css` and `tokens.generated.ts` are excluded by explicit provenance; tests and test setup are excluded because they are non-runtime fixtures. The audit does not claim repository-wide dimensional tokenization.
+
+Local geometry remains intentionally authored when it describes bounded anatomy rather than a reusable design decision. Current justified classes are: 1px hairlines and borders; icon, avatar, meter, focus-outline, and status-dot dimensions; table/panel minimum row anatomy; chart percentages supplied from synthetic runtime data; responsive breakpoints and viewport-relative widths; modal viewport bounds; and the 760px responsive page-title compression whose 1.75rem value coincidentally equals the numeric token. Repetition that escapes these bounded classes is evidence for a new token and must be reviewed rather than silently allow-listed.

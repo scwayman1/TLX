@@ -8,7 +8,7 @@ The system has five generated/synchronized layers:
 4. `/src/design-system/tokens.css` — generated runtime CSS custom properties with TelemetryX semantic names.
 5. `/src/design-system/tokens.generated.ts` — generated typed/runtime manifest consumed by the component lab.
 
-Run `npm run design:lint` after changing `DESIGN.md`, then `npm run design:generate` and `npm run design:check`. Commit all four generated artifacts. `npm run design:audit` enforces a zero raw-color-literal threshold outside generated token CSS. The exactly pinned `@google/design.md` 0.4.0 package is a development dependency and is not shipped in the application bundle.
+Run `npm run design:lint` after changing `DESIGN.md`, then `npm run design:generate` and `npm run design:check`. Commit all four generated artifacts. `npm run design:audit` enforces a zero-violation threshold across authored `src` CSS and runtime TS/TSX/JS/MJS. It detects raw color representations in those sources and unambiguous duplicate normative typography declarations in CSS. Generated token CSS/TS and non-runtime tests/setup are excluded by explicit provenance. The exactly pinned `@google/design.md` 0.4.0 package is a development dependency and is not shipped in the application bundle.
 
 ## Use in React and CSS
 
@@ -16,6 +16,7 @@ Run `npm run design:lint` after changing `DESIGN.md`, then `npm run design:gener
 - Reuse the existing button, badge, panel, field, table, banner, and `ModalDialog` anatomy before creating a variant.
 - Keep domain state and product truth in React/domain code; CSS only expresses visual state.
 - Inspect changes in the in-app Design system lab using the explicit sidebar demo control. Fixtures are synthetic and are not product claims.
+- Use `ScrollableRegion` for horizontally scrollable tables; its labelled region enters the tab order only while measured overflow exists.
 
 ## When to add a token
 
@@ -57,6 +58,8 @@ Automated tests prove material semantics and behavior. DESIGN.md lint proves tok
 A normative token change requires design-system review because it affects future surfaces and exports. A new component primitive requires a demonstrated repeated problem, documented anatomy/states, keyboard and screen-reader behavior, responsive rules, and a component-lab example. Product-specific composition can be reviewed within its workflow as long as it uses existing contracts.
 
 Avoid one-off styles by searching existing semantic variables and component anatomy first. When extending, add the smallest coherent layer and migrate existing duplicate use in the same reviewable change.
+
+The audit intentionally permits local component geometry rather than claiming dimensional tokenization of the repository. Justified categories are 1px rendering hairlines, icon/avatar/meter/focus/status anatomy, row and panel minimum dimensions, data-driven percentages, responsive breakpoints and viewport bounds, and the documented responsive page-title compression. Any broader or repeated exception requires design-system review.
 
 ## Cross-artifact guidance
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, Check, Clock3, LockKeyhole, MoreHorizontal, Search, ShieldAlert, X } from 'lucide-react'
 import { ModalDialog } from './ModalDialog'
+import { ScrollableRegion } from './ScrollableRegion'
 import { designTokens } from './tokens.generated'
 import './showcase.css'
 
@@ -94,7 +95,7 @@ export function DesignSystemLab() {
         <div><span>Open work</span><strong>12</strong><small>4 synthetic orders due today</small></div>
         <div className="instrument-risk"><span>Safety exceptions</span><strong>1</strong><small>Named owner · response due</small></div>
       </div>
-      <div className="table-wrap" role="region" aria-label="Synthetic component table" tabIndex={0}><table><thead><tr><th>Work order</th><th>Asset</th><th>Priority</th><th>Owner</th><th>Status</th></tr></thead><tbody><tr><td><b>WO-24091</b><span>Brake response fixture</span></td><td>TRL-443</td><td><LabBadge tone="danger">Critical</LabBadge></td><td>Dana Foster</td><td><LabBadge tone="info">In progress</LabBadge></td></tr><tr><td><b>WO-24088</b><span>Service fixture</span></td><td>EXC-221</td><td><LabBadge tone="warning">High</LabBadge></td><td>Mira Patel</td><td><LabBadge>Waiting parts</LabBadge></td></tr></tbody></table></div>
+      <ScrollableRegion label="Synthetic component table"><table><thead><tr><th>Work order</th><th>Asset</th><th>Priority</th><th>Owner</th><th>Status</th></tr></thead><tbody><tr><td><b>WO-24091</b><span>Brake response fixture</span></td><td>TRL-443</td><td><LabBadge tone="danger">Critical</LabBadge></td><td>Dana Foster</td><td><LabBadge tone="info">In progress</LabBadge></td></tr><tr><td><b>WO-24088</b><span>Service fixture</span></td><td>EXC-221</td><td><LabBadge tone="warning">High</LabBadge></td><td>Mira Patel</td><td><LabBadge>Waiting parts</LabBadge></td></tr></tbody></table></ScrollableRegion>
       <div className="evidence-fixtures"><article className="evidence-card"><span><LabBadge tone="success">Fact</LabBadge><small>Synthetic inspection INSP-8841</small></span><b>Brake inspection</b><p>Left brake assembly failed the fixture safety threshold.</p><time>Observed Aug 21, 2:18 PM</time></article><article className="decision-fixture"><div><ShieldAlert size={18} /><span><strong>Human approval required</strong><small>No external tool has run.</small></span></div><dl><div><dt>Input shared</dt><dd>BA-14TL · Phoenix Yard</dd></div><div><dt>Authority</dt><dd>Fleet manager</dd></div></dl><div className="lab-actions"><button className="secondary">Reject</button><button className="primary">Approve lookup</button></div></article></div>
     </section>
 

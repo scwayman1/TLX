@@ -11,6 +11,7 @@ body {
   background: var(--ds-color-canvas);
   font-family: var(--ds-font-sans);
   font-size: var(--ds-text-body);
+  font-weight: var(--ds-weight-body);
   line-height: var(--ds-leading-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;

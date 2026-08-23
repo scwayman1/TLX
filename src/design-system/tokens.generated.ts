@@ -82,7 +82,8 @@ export const designTokens = {
       "fontSize": "1.75rem",
       "fontWeight": 720,
       "lineHeight": 1,
-      "fontFeature": "tnum lining-nums"
+      "letterSpacing": "-0.03em",
+      "fontFeature": "'tnum', 'lnum'"
     },
     "code": {
       "fontFamily": "Cascadia Mono, SFMono-Regular, Consolas, monospace",
@@ -261,6 +262,10 @@ export const designTokens = {
     }
   },
   "contracts": {
+    "typography": {
+      "label-text-transform": "uppercase",
+      "numeric-font-variant": "tabular-nums lining-nums"
+    },
     "elevation": {
       "level-1": "0 1px 2px rgb(23 35 29 / 0.06)",
       "level-2": "0 8px 24px rgb(23 35 29 / 0.12)",

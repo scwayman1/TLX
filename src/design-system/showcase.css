@@ -22,11 +22,11 @@
 .type-specimen > div { min-width: 0; }
 .type-specimen span { display: block; margin-bottom: var(--ds-space-2); color: var(--ds-color-text-muted); font-size: var(--ds-text-label); }
 .type-specimen h1, .type-specimen h2, .type-specimen p { margin: 0; }
-.type-specimen h1 { font-size: var(--ds-text-display); line-height: 1.12; }
-.type-specimen h2 { font-size: var(--ds-text-heading-lg); }
-.type-specimen p { font-size: var(--ds-text-body-sm); }
-.type-specimen code { font-family: var(--ds-font-mono); font-size: var(--ds-text-label); overflow-wrap: anywhere; }
-.lab-number { font-size: 1.75rem; font-variant-numeric: tabular-nums; }
+.type-specimen h1 { font-size: var(--ds-text-display); font-weight: var(--ds-weight-display); line-height: var(--ds-leading-display); letter-spacing: var(--ds-tracking-display); }
+.type-specimen h2 { font-size: var(--ds-text-heading-lg); font-weight: var(--ds-weight-heading-lg); line-height: var(--ds-leading-heading-lg); letter-spacing: var(--ds-tracking-heading-lg); }
+.type-specimen p { font-size: var(--ds-text-body-sm); font-weight: var(--ds-weight-body-sm); line-height: var(--ds-leading-body-sm); }
+.type-specimen code { font-family: var(--ds-font-mono); font-size: var(--ds-text-code); font-weight: var(--ds-weight-code); line-height: var(--ds-leading-code); overflow-wrap: anywhere; }
+.lab-number { font-size: var(--ds-text-numeric); font-weight: var(--ds-weight-numeric); line-height: var(--ds-leading-numeric); letter-spacing: var(--ds-tracking-numeric); font-feature-settings: var(--ds-feature-numeric); font-variant-numeric: var(--ds-variant-numeric); }
 .spacing-scale { display: flex; flex-wrap: wrap; gap: var(--ds-space-4); align-items: end; }
 .spacing-scale div { display: grid; gap: var(--ds-space-2); color: var(--ds-color-text-muted); font-size: var(--ds-text-label); }
 .spacing-scale i { display: block; height: 12px; background: var(--ds-brand-operational); }
@@ -45,7 +45,7 @@
 .instrument-strip { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--ds-color-border); background: var(--ds-color-border); gap: 1px; }
 .instrument-strip > div { display: grid; gap: 2px; padding: var(--ds-space-4); background: var(--ds-color-surface); }
 .instrument-strip span, .instrument-strip small { color: var(--ds-color-text-muted); font-size: var(--ds-text-body-sm); }
-.instrument-strip strong { font-size: 1.75rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.instrument-strip strong { font-size: var(--ds-text-numeric); font-weight: var(--ds-weight-numeric); line-height: var(--ds-leading-numeric); letter-spacing: var(--ds-tracking-numeric); font-feature-settings: var(--ds-feature-numeric); font-variant-numeric: var(--ds-variant-numeric); }
 .instrument-strip .instrument-risk { border-top: 3px solid var(--ds-color-danger); }
 .evidence-fixtures { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ds-space-4); }
 .decision-fixture { display: grid; gap: var(--ds-space-4); padding: var(--ds-space-5); border: 1px solid var(--ds-color-warning); border-radius: var(--ds-radius-md); background: var(--ds-color-warning-soft); }
@@ -58,7 +58,7 @@
 .state-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ds-space-3); }
 .state-card { display: flex; align-items: flex-start; gap: var(--ds-space-3); min-height: 168px; padding: var(--ds-space-4); border: 1px solid var(--ds-color-border); border-top: 3px solid var(--ds-color-border-strong); border-radius: var(--ds-radius-sm); background: var(--ds-color-surface); }
 .state-card > div { display: grid; align-content: start; gap: 3px; }
-.state-card small { color: var(--ds-color-text-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.state-card small { color: var(--ds-color-text-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: var(--ds-transform-label); }
 .state-card h3, .state-card p { margin: 0; }
 .state-card h3 { font-size: var(--ds-text-body); }
 .state-card p { color: var(--ds-color-text-muted); font-size: var(--ds-text-body-sm); }

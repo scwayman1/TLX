@@ -103,7 +103,20 @@
       "mainInert": true,
       "topbarInert": true
     },
-    "missionControlTableReached": true
+    "desktopTable": {
+      "overflow": false,
+      "tabIndex": null
+    },
+    "narrowTable": {
+      "overflow": true,
+      "tabIndex": "0"
+    },
+    "missionControlTableReached": true,
+    "commandInvariant": {
+      "dialogCount": 1,
+      "assetOpen": true,
+      "commandOpen": false
+    }
   },
   "forcedColors": {
     "emulated": true,
@@ -111,10 +124,11 @@
   },
   "requests": [
     "http://127.0.0.1:4173/",
-    "http://127.0.0.1:4173/assets/index-BoCaDtj5.js",
-    "http://127.0.0.1:4173/assets/index-C2dn-qia.css",
-    "http://127.0.0.1:4173/assets/DesignSystemLab-o06-JQLS.js",
-    "http://127.0.0.1:4173/assets/DesignSystemLab-1FOKh6pF.css"
+    "http://127.0.0.1:4173/assets/index-VUh5R1rD.js",
+    "http://127.0.0.1:4173/assets/index-Cgkf91P5.css",
+    "http://127.0.0.1:4173/favicon.svg",
+    "http://127.0.0.1:4173/assets/DesignSystemLab-Y9bNTrda.js",
+    "http://127.0.0.1:4173/assets/DesignSystemLab-CAOZI_Ih.css"
   ],
   "externalRequests": [],
   "consoleErrors": []

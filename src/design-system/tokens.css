@@ -38,9 +38,11 @@
   --ds-text-display: 2rem;
   --ds-weight-display: 720;
   --ds-leading-display: 1.12;
+  --ds-tracking-display: -0.025em;
   --ds-text-heading-lg: 1.5rem;
   --ds-weight-heading-lg: 700;
   --ds-leading-heading-lg: 1.2;
+  --ds-tracking-heading-lg: -0.015em;
   --ds-text-heading-md: 1.125rem;
   --ds-weight-heading-md: 700;
   --ds-leading-heading-md: 1.3;
@@ -53,9 +55,14 @@
   --ds-text-label: 0.75rem;
   --ds-weight-label: 680;
   --ds-leading-label: 1.3;
+  --ds-tracking-label: 0.055em;
+  --ds-transform-label: uppercase;
   --ds-text-numeric: 1.75rem;
   --ds-weight-numeric: 720;
   --ds-leading-numeric: 1;
+  --ds-tracking-numeric: -0.03em;
+  --ds-feature-numeric: 'tnum', 'lnum';
+  --ds-variant-numeric: tabular-nums lining-nums;
   --ds-text-code: 0.75rem;
   --ds-weight-code: 600;
   --ds-leading-code: 1.4;

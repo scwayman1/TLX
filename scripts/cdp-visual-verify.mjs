@@ -1,6 +1,6 @@
 import { writeFile, mkdir } from 'node:fs/promises'
 
-const endpoint = 'http://localhost:9222'
+const endpoint = process.env.CDP_ENDPOINT ?? 'http://localhost:9222'
 const app = 'http://127.0.0.1:4173/'
 const output = new URL('../docs/design-system/screenshots/', import.meta.url)
 await mkdir(output, { recursive: true })
@@ -75,7 +75,7 @@ async function clickByText(text) {
   await wait(350)
 }
 async function key(key, modifiers = 0) {
-  const virtualKey = key === 'Tab' ? 9 : 27
+  const virtualKey = key === 'Tab' ? 9 : key === 'Escape' ? 27 : key.toUpperCase().charCodeAt(0)
   await send('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: virtualKey, modifiers })
   await send('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: virtualKey, modifiers })
   await wait(50)
@@ -108,14 +108,30 @@ const mobileClosed = await evaluate(`({ dialogOpen: Boolean(document.querySelect
 assert(!mobileClosed.dialogOpen && mobileClosed.activeLabel === 'Open navigation', `mobile drawer Escape/focus restoration: ${JSON.stringify(mobileClosed)}`)
 
 await viewport(1440, 1100)
+const desktopTable = await evaluate(`(() => { const region=document.querySelector('[aria-label="Active work orders table"]'); return { overflow: region.scrollWidth > region.clientWidth, tabIndex: region.getAttribute('tabindex') } })()`)
+assert(!desktopTable.overflow && desktopTable.tabIndex === null, `non-overflowing desktop table tab order: ${JSON.stringify(desktopTable)}`)
+
+await viewport(320, 900)
+const narrowTable = await evaluate(`(() => { const region=document.querySelector('[aria-label="Active work orders table"]'); return { overflow: region.scrollWidth > region.clientWidth, tabIndex: region.getAttribute('tabindex') } })()`)
+assert(narrowTable.overflow && narrowTable.tabIndex === '0', `overflowing narrow table tab order: ${JSON.stringify(narrowTable)}`)
 await evaluate(`document.body.focus()`)
 let tableReached = false
-for (let index = 0; index < 50; index += 1) {
+for (let index = 0; index < 100; index += 1) {
   await key('Tab')
   tableReached = await evaluate(`document.activeElement?.getAttribute('aria-label') === 'Active work orders table'`)
   if (tableReached) break
 }
 assert(tableReached, 'keyboard reaches named Mission Control table region')
+
+await viewport(1440, 1100)
+await clickByText('Assets')
+const assetOpened = await evaluate(`(() => { const node=[...document.querySelectorAll('button')].find(button => button.textContent?.includes('2022 Ford F-550')); if (!node) return false; node.click(); return true })()`)
+assert(assetOpened, 'asset drawer command-invariant setup')
+await wait(350)
+await evaluate(`document.querySelector('.global-search')?.click()`)
+await key('k', 2)
+const commandInvariant = await evaluate(`({ dialogCount: document.querySelectorAll('[role="dialog"]').length, assetOpen: Boolean(document.querySelector('#asset-drawer-title')), commandOpen: Boolean(document.querySelector('#modal-search-and-navigation')) })`)
+assert(commandInvariant.dialogCount === 1 && commandInvariant.assetOpen && !commandInvariant.commandOpen, `direct/shortcut command modal invariant: ${JSON.stringify(commandInvariant)}`)
 
 await send('Emulation.setEmulatedMedia', { media: 'screen', features: [{ name: 'forced-colors', value: 'active' }] })
 await navigate()
@@ -150,7 +166,7 @@ const report = {
   app,
   views,
   reflow,
-  keyboard: { mobileDrawer: mobileOpen, missionControlTableReached: tableReached },
+  keyboard: { mobileDrawer: mobileOpen, desktopTable, narrowTable, missionControlTableReached: tableReached, commandInvariant },
   forcedColors: { emulated: true, screenshot: 'mission-control-forced-colors.png' },
   requests: [...new Set(requests)],
   externalRequests,

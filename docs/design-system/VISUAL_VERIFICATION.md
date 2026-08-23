@@ -17,7 +17,7 @@ Date: 2026-08-22
 | Investigation / approval | 1440 × 1100 | 1425 | No | `screenshots/investigation-1440.png` |
 | Mission control, forced colors emulated | 1440 × 1100 | 1425 | No | `screenshots/mission-control-forced-colors.png` |
 
-The CDP result is preserved in `browser-verification.json`. Network observation remained enabled through repeated navigation, lazy lab selection, and a final 1.5-second delayed observation window. It recorded exactly five unique local requests and zero external requests: document, default JS, default CSS, then the separately emitted DesignSystemLab JS and CSS chunks. It recorded zero console warnings, errors, or exceptions.
+The CDP result is preserved in `browser-verification.json`. Network observation remained enabled through repeated navigation, lazy lab selection, and a final 1.5-second delayed observation window. It recorded exactly six unique local requests and zero external requests: document, favicon, default JS/CSS, then the separately emitted DesignSystemLab JS/CSS chunks. It recorded zero console warnings, errors, or exceptions.
 
 ## Keyboard and modal verification
 
@@ -27,11 +27,13 @@ Real CDP keyboard events verified the narrow drawer at 320px:
 - Main and topbar reported `inert: true` while open.
 - Fourteen forward Tab events and one reverse Shift+Tab event remained in the drawer.
 - Escape closed the drawer and restored focus to the now-`Open navigation` trigger.
-- The production `Active work orders table` named region was reached by repeated real Tab events from the document.
+- At 1440px, the production `Active work orders table` measured no horizontal overflow and had no `tabindex`.
+- At 320px, the same region measured horizontal overflow, exposed `tabindex="0"`, and was reached by repeated real Tab events from the document.
+- With the asset drawer open, both a programmatic direct click of the global-search control and a real Ctrl+K event left exactly one dialog open; search did not stack.
 
-Vitest adds regression coverage for forward/reverse dialog wrap, backdrop close, Escape, scrim close, focus restoration, prior-inert restoration, narrow `matchMedia` behavior, blocked Ctrl/Cmd+K stacking over asset/mobile/lab dialogs, and named keyboard-focusable Mission Control and asset table regions. Exact RED/GREEN evidence is in `RED_EVIDENCE.md`.
+Vitest adds regression coverage for forward/reverse dialog wrap; top-only backdrop/Escape ownership; nested top-close focus transfer; lower-first unmount; underlying-layer inertness/`aria-hidden`; removed-active-element recovery; exact final background restoration; deterministic cleanup; narrow `matchMedia` behavior; blocked direct-click and Ctrl/Cmd+K stacking over asset/mobile/lab dialogs; and overflow-dependent table focusability across resize/content changes. Exact RED/GREEN and sabotage evidence is in `RED_EVIDENCE.md`.
 
-The modal implementation uses one shared primitive and a minimal stack. Each layer snapshots each background element’s prior inert property and restores that exact value; only the top stack entry handles Escape, backdrop, focus containment, and cleanup. App-level Ctrl/Cmd+K checks the same manager and does not open search over an active modal.
+The modal implementation uses one centralized manager. It owns application-background inertness once, hides and inerts every non-top modal layer, transfers focus to the newly exposed top layer, tolerates tested lower-first unmount, and restores captured background inert values only after the final modal exits. Only the top entry owns Escape, backdrop, and focus containment. Both direct-click and Ctrl/Cmd+K command-opening paths check the same manager.
 
 ## Reflow and forced colors
 
@@ -45,13 +47,13 @@ Clean production build (`vite v8.2.2`):
 
 ```
 dist/index.html                             0.63 kB │ gzip:  0.37 kB
-dist/assets/DesignSystemLab-1FOKh6pF.css    8.56 kB │ gzip:  1.88 kB
-dist/assets/index-C2dn-qia.css             36.28 kB │ gzip:  6.51 kB
-dist/assets/DesignSystemLab-o06-JQLS.js    19.40 kB │ gzip:  5.51 kB
-dist/assets/index-BoCaDtj5.js             234.35 kB │ gzip: 72.69 kB
+dist/assets/DesignSystemLab-CAOZI_Ih.css    9.32 kB │ gzip:  1.95 kB
+dist/assets/index-Cgkf91P5.css             37.10 kB │ gzip:  6.63 kB
+dist/assets/DesignSystemLab-Y9bNTrda.js    19.46 kB │ gzip:  5.55 kB
+dist/assets/index-VUh5R1rD.js             236.06 kB │ gzip: 73.34 kB
 ```
 
-The explicit Demo control remains available. `DesignSystemLab` is loaded with `React.lazy`; its showcase CSS follows the lazy module. Vite emits separate 19.40 kB JS and 8.56 kB CSS lab chunks, and CDP observes those requests only after the Demo control is selected.
+The explicit Demo control remains available. `DesignSystemLab` is loaded with `React.lazy`; its showcase CSS follows the lazy module. Vite emits separate 19.46 kB JS and 9.32 kB CSS lab chunks, and CDP observes those requests only after the Demo control is selected.
 
 ## Token and supply-chain evidence
 
@@ -61,13 +63,14 @@ The explicit Demo control remains available. `DesignSystemLab` is loaded with `R
 - `DESIGN.md` is normative. One Windows-safe Node script generates DTCG, Tailwind interchange, runtime CSS, and typed runtime manifest without shell redirection.
 - Design lint: 0 errors, 0 warnings, 1 informational token summary.
 - Drift check: clean.
-- Literal audit: 0 raw color violations outside generated token CSS (enforced threshold: 0).
-- The lab’s swatch hex values, spacing values, typography contracts, and calculated contrast ratios are derived from the generated runtime manifest; no duplicate lab hex or ratio strings remain.
+- Literal audit: 0 violations at threshold 0 across authored `src` CSS and runtime TS/TSX/JS/MJS, with generated tokens and non-runtime tests/setup excluded by explicit provenance.
+- The audit detects raw color representations and unambiguous duplicated normative typography declarations; it does not claim repository-wide dimensional tokenization. Justified local geometry is listed in `DESIGN.md` and the governance README.
+- Runtime CSS generates font size, weight, line height, letter spacing, label transform, numeric feature settings, and numeric variant settings. The lab’s swatches, spacing, typography contracts, and calculated contrast ratios derive from the generated manifest.
 
 ## Visual inspection
 
 - The 320px final capture has no clipped controls or overlap; critical actions remain legible and full-width.
-- The component lab loaded successfully from its separate chunk. Generated swatches and calculated ratios rendered, with no clipping in the inspected 1440px view.
+- The component lab loaded successfully from its separate chunk. Generated swatches, typography specimens, and calculated ratios rendered with no clipping in the inspected 1440px view.
 - Forced-colors emulation retained visible boundaries and text/status labels without relying on color alone.
 - The Operating Ledger direction and existing product hierarchy were preserved; remediation did not broaden workflow behavior or arbitrarily restyle surfaces.
 

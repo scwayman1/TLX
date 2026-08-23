@@ -96,3 +96,56 @@ Test Files  5 passed (5)
 Tests  34 passed (34)
 Duration  5.40s
 ```
+
+## PR #8 final bounded remediation — centralized modal ownership and overflow-dependent tables
+
+Focused tests were authored before implementation and run with:
+
+`npm test -- --run src/design-system/ModalDialog.test.tsx src/design-system/ScrollableRegion.test.tsx src/App.test.tsx`
+
+Witnessed RED summary:
+
+```
+❯ src/design-system/ScrollableRegion.test.tsx (0 test)
+❯ src/design-system/ModalDialog.test.tsx (5 tests | 5 failed)
+❯ src/App.test.tsx (15 tests | 3 failed)
+Test Files  3 failed (3)
+Tests  8 failed | 12 passed (20)
+Duration  5.63s
+```
+
+Named causes: no `ScrollableRegion` existed; independent modal cleanup did not inert/hide underlying layers or expose deterministic manager state; focus was not transferred after top close; direct command clicks bypassed the keyboard guard; and production table wrappers were always in the tab order. The first focused run also proved the existing backdrop test had selected an identically named header close button; the corrected test targets `.modal-scrim` explicitly rather than preserving a false failure.
+
+Focused GREEN:
+
+```
+Test Files  3 passed (3)
+Tests  23 passed (23)
+Duration  5.89s
+```
+
+Sabotage checks were run against the critical contracts and then reverted:
+
+```
+Modal sabotage: forced every modal layer non-inert
+Test Files  1 failed (1)
+Tests  1 failed | 4 skipped (5)
+Failure: underlying modal expected inert true, received false
+
+Table sabotage: removed conditional tabindex
+Test Files  1 failed (1)
+Tests  1 failed | 2 skipped (3)
+Failure: overflowing region expected tabindex="0", received null
+
+Audit sabotage: added one temporary authored CSS line with #fff and font-size: 1.75rem
+Design literal audit: 2 violations at threshold 0
+Findings: raw color literal; duplicated normative numeric font size
+```
+
+Final full-suite gate after clean `npm ci`:
+
+```
+Test Files  7 passed (7)
+Tests  43 passed (43)
+Duration  7.42s
+```
